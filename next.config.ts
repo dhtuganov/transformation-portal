@@ -4,12 +4,9 @@ const nextConfig: NextConfig = {
   // Output standalone for serverless deployment
   output: 'standalone',
 
-  // Experimental features for better Netlify compatibility
-  experimental: {
-    // Include content directory in serverless bundle
-    outputFileTracingIncludes: {
-      '/**': ['./content/**/*'],
-    },
+  // Include content directory in serverless bundle (moved from experimental in Next.js 16)
+  outputFileTracingIncludes: {
+    '/**': ['./content/**/*'],
   },
 };
 
