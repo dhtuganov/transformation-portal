@@ -46,13 +46,26 @@ export default async function DashboardPage() {
       redirect('/login')
     }
 
-    const { data: profileData } = await supabase
+    const { data: profileData, error } = await supabase
       .from('profiles')
       .select('*')
       .eq('id', user.id)
-      .single() as { data: typeof MOCK_PROFILE | null }
+      .single() as { data: typeof MOCK_PROFILE | null; error: unknown }
 
-    profile = profileData || MOCK_PROFILE
+    if (error) {
+      console.error('Profile fetch error:', error)
+    }
+
+    profile = profileData || {
+      id: user.id,
+      email: user.email || '',
+      full_name: user.email?.split('@')[0] || 'Пользователь',
+      role: 'employee',
+      mbti_type: null,
+      mbti_verified: false,
+      department: null,
+      branch: null,
+    }
 
     // Get learning progress
     type ProgressItem = { id: string; status: string; progress_percent: number }
