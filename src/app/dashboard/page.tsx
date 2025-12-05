@@ -19,23 +19,23 @@ export const metadata = {
 // DEMO MODE flag - set to false when connecting real Supabase
 const DEMO_MODE = false
 
-// Mock data for demo
-const MOCK_PROFILE = {
-  id: 'demo-user-1',
-  email: 'demo@otrar.kz',
-  full_name: 'Айгуль Сериккызы',
-  role: 'manager',
-  mbti_type: 'ENFP',
-  mbti_verified: true,
-  department: 'Продажи',
-  branch: 'Алматы',
+// Profile type
+type Profile = {
+  id: string
+  email: string
+  full_name: string | null
+  role: string
+  mbti_type: string | null
+  mbti_verified: boolean
+  department: string | null
+  branch: string | null
 }
 
 export default async function DashboardPage() {
-  let profile = MOCK_PROFILE
-  let completedCount = 5
-  let totalCount = 8
-  let progressPercent = 63
+  let profile: Profile | null = null
+  let completedCount = 0
+  let totalCount = 0
+  let progressPercent = 0
 
   if (!DEMO_MODE) {
     const supabase = await createClient()
@@ -50,7 +50,7 @@ export default async function DashboardPage() {
       .from('profiles')
       .select('*')
       .eq('id', user.id)
-      .single() as { data: typeof MOCK_PROFILE | null; error: unknown }
+      .single() as { data: Profile | null; error: unknown }
 
     if (error) {
       console.error('Profile fetch error:', error)
