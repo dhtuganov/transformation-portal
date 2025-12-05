@@ -6,7 +6,7 @@ import type { User } from '@supabase/supabase-js'
 import type { Profile } from '@/types/database'
 
 // DEMO MODE flag - set to false when connecting real Supabase
-const DEMO_MODE = true
+const DEMO_MODE = false
 
 // Mock data for demo
 const MOCK_USER = {

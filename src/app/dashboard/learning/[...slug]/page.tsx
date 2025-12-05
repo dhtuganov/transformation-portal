@@ -12,7 +12,7 @@ import { ArrowLeft, Clock, User, Calendar, BookOpen } from 'lucide-react'
 export const dynamic = 'force-dynamic'
 
 // DEMO MODE flag - set to false when connecting real Supabase
-const DEMO_MODE = true
+const DEMO_MODE = false
 
 interface PageProps {
   params: Promise<{ slug: string[] }>

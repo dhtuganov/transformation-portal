@@ -4,7 +4,7 @@ import { NextResponse, type NextRequest } from 'next/server'
 export async function middleware(request: NextRequest) {
   // DEMO MODE: Bypass auth for UI preview
   // Remove this block when connecting real Supabase
-  const DEMO_MODE = true
+  const DEMO_MODE = false
 
   if (DEMO_MODE) {
     // Redirect root to dashboard in demo mode
