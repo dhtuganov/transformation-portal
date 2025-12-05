@@ -35,6 +35,10 @@ const MOCK_MBTI_PROFILE: MBTIProfile = {
   id: 'demo-mbti-1',
   user_id: 'demo-user-1',
   mbti_type: 'ENFP',
+  dominant_function: 'Ne',
+  auxiliary_function: 'Fi',
+  tertiary_function: 'Te',
+  inferior_function: 'Si',
   strengths: ['Креативность', 'Эмпатия', 'Энтузиазм', 'Гибкость мышления'],
   growth_areas: ['Завершение начатого', 'Фокусировка', 'Работа с деталями'],
   communication_style: {
@@ -45,7 +49,6 @@ const MOCK_MBTI_PROFILE: MBTIProfile = {
   assessed_by: 'Зарина Сатубалдина',
   assessed_at: '2024-10-15T10:00:00Z',
   created_at: '2024-10-15T10:00:00Z',
-  updated_at: '2024-10-15T10:00:00Z',
 }
 
 const ROLE_LABELS: Record<string, string> = {
