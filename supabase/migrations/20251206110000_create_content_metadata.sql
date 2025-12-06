@@ -18,12 +18,8 @@ CREATE TABLE IF NOT EXISTS content_metadata (
   videos JSONB DEFAULT '[]',                    -- [{url, title, duration, platform}]
   external_links JSONB DEFAULT '[]',            -- [{url, title, description}]
 
-  -- Full-text search
-  search_vector tsvector GENERATED ALWAYS AS (
-    setweight(to_tsvector('russian', coalesce(title, '')), 'A') ||
-    setweight(to_tsvector('russian', coalesce(description, '')), 'B') ||
-    setweight(to_tsvector('russian', coalesce(array_to_string(tags, ' '), '')), 'C')
-  ) STORED,
+  -- Full-text search (updated via trigger instead of GENERATED for compatibility)
+  search_vector tsvector,
 
   -- Analytics
   view_count INTEGER DEFAULT 0,
@@ -42,6 +38,24 @@ CREATE TABLE IF NOT EXISTS content_metadata (
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
+
+-- Function to update search_vector
+CREATE OR REPLACE FUNCTION update_content_search_vector()
+RETURNS TRIGGER AS $$
+BEGIN
+  NEW.search_vector :=
+    setweight(to_tsvector('russian', coalesce(NEW.title, '')), 'A') ||
+    setweight(to_tsvector('russian', coalesce(NEW.description, '')), 'B') ||
+    setweight(to_tsvector('russian', coalesce(array_to_string(NEW.tags, ' '), '')), 'C');
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Trigger to auto-update search_vector on insert/update
+CREATE TRIGGER trigger_update_content_search_vector
+BEFORE INSERT OR UPDATE ON content_metadata
+FOR EACH ROW
+EXECUTE FUNCTION update_content_search_vector();
 
 -- Full-text search index
 CREATE INDEX IF NOT EXISTS idx_content_search ON content_metadata USING GIN(search_vector);
@@ -196,16 +210,24 @@ BEGIN
     cm.difficulty,
     cm.duration,
     cm.tags,
-    ts_rank(cm.search_vector, websearch_to_tsquery('russian', search_query)) as rank
+    CASE
+      WHEN search_query IS NOT NULL AND search_query != ''
+      THEN ts_rank(cm.search_vector, websearch_to_tsquery('russian', search_query))
+      ELSE 0::REAL
+    END as rank
   FROM content_metadata cm
   WHERE
     cm.published = true
-    AND (search_query IS NULL OR cm.search_vector @@ websearch_to_tsquery('russian', search_query))
+    AND (search_query IS NULL OR search_query = '' OR cm.search_vector @@ websearch_to_tsquery('russian', search_query))
     AND (filter_category IS NULL OR cm.category = filter_category)
     AND (filter_difficulty IS NULL OR cm.difficulty = filter_difficulty)
     AND (filter_mbti_type IS NULL OR filter_mbti_type = ANY(cm.mbti_types) OR 'all' = ANY(cm.mbti_types))
   ORDER BY
-    CASE WHEN search_query IS NOT NULL THEN ts_rank(cm.search_vector, websearch_to_tsquery('russian', search_query)) ELSE 0 END DESC,
+    CASE
+      WHEN search_query IS NOT NULL AND search_query != ''
+      THEN ts_rank(cm.search_vector, websearch_to_tsquery('russian', search_query))
+      ELSE 0
+    END DESC,
     cm.sort_order,
     cm.created_at DESC
   LIMIT limit_count;
