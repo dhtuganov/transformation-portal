@@ -2,6 +2,14 @@
 
 import { MDXRemote } from 'next-mdx-remote'
 import type { MDXRemoteSerializeResult } from 'next-mdx-remote'
+import {
+  DichotomyScale,
+  ComparisonTable,
+  MBTITypeCard,
+  CognitiveFunctionsStack,
+  QuestionBox,
+  Callout,
+} from './MBTIComponents'
 
 interface MDXRendererProps {
   mdxSource: MDXRemoteSerializeResult
@@ -134,6 +142,13 @@ const components = {
       alt={props.alt || ''}
     />
   ),
+  // MBTI-specific components
+  DichotomyScale,
+  ComparisonTable,
+  MBTITypeCard,
+  CognitiveFunctionsStack,
+  QuestionBox,
+  Callout,
 }
 
 export function MDXRenderer({ mdxSource }: MDXRendererProps) {
