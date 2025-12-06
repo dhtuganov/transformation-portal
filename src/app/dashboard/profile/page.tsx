@@ -4,8 +4,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { TypeCard } from '@/components/mbti/TypeCard'
-import { User, Mail, Building, MapPin, Briefcase } from 'lucide-react'
+import { User, Mail, Building, MapPin, Briefcase, Edit } from 'lucide-react'
 import type { MBTIType, MBTIProfile } from '@/types/database'
+import Link from 'next/link'
+import { Button } from '@/components/ui/button'
 
 export const dynamic = 'force-dynamic'
 
@@ -121,11 +123,19 @@ export default async function ProfilePage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Мой профиль</h1>
-        <p className="text-muted-foreground mt-1">
-          Информация о вас и вашем MBTI-типе
-        </p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Мой профиль</h1>
+          <p className="text-muted-foreground mt-1">
+            Информация о вас и вашем MBTI-типе
+          </p>
+        </div>
+        <Button asChild>
+          <Link href="/dashboard/profile/edit">
+            <Edit className="mr-2 h-4 w-4" />
+            Редактировать профиль
+          </Link>
+        </Button>
       </div>
 
       <div className="grid gap-6 md:grid-cols-3">

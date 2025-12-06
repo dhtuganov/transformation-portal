@@ -117,3 +117,47 @@ export function getCategories(): string[] {
   const categories = new Set(content.map((item) => item.category).filter(Boolean))
   return Array.from(categories) as string[]
 }
+
+export interface ContentFilters {
+  query?: string
+  categories?: string[]
+  difficulty?: 'beginner' | 'intermediate' | 'advanced'
+  mbtiTypes?: string[]
+}
+
+export function filterContent(items: ContentItem[], filters: ContentFilters): ContentItem[] {
+  let filtered = items
+
+  // Search by query (title and description)
+  if (filters.query && filters.query.trim()) {
+    const query = filters.query.toLowerCase().trim()
+    filtered = filtered.filter(
+      (item) =>
+        item.title.toLowerCase().includes(query) ||
+        item.description?.toLowerCase().includes(query)
+    )
+  }
+
+  // Filter by categories
+  if (filters.categories && filters.categories.length > 0) {
+    filtered = filtered.filter((item) =>
+      filters.categories!.includes(item.category || '')
+    )
+  }
+
+  // Filter by difficulty
+  if (filters.difficulty) {
+    filtered = filtered.filter((item) => item.difficulty === filters.difficulty)
+  }
+
+  // Filter by MBTI types
+  if (filters.mbtiTypes && filters.mbtiTypes.length > 0) {
+    filtered = filtered.filter((item) => {
+      if (!item.mbti_types || item.mbti_types.length === 0) return true
+      if (item.mbti_types.includes('all')) return true
+      return filters.mbtiTypes!.some((type) => item.mbti_types!.includes(type))
+    })
+  }
+
+  return filtered
+}

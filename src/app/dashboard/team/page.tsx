@@ -7,6 +7,8 @@ import { Progress } from '@/components/ui/progress'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { TeamChart } from '@/components/mbti/TeamChart'
 import { TypeBadge } from '@/components/mbti/TypeBadge'
+import { TeamExportButton } from '@/components/team/TeamExportButton'
+import type { TeamMemberExportData } from '@/lib/export/excel'
 import {
   Users,
   BookOpen,
@@ -161,13 +163,41 @@ export default async function TeamPage() {
 
   const mbtiPercent = totalMembers > 0 ? Math.round((membersWithMBTI / totalMembers) * 100) : 0
 
+  // Prepare export data
+  const exportData: TeamMemberExportData[] = teamMembers.map(member => {
+    const quizzesCompleted = quizAttempts?.filter(a => a.user_id === member.id).length || 0;
+    const learningProgress = progressByUser[member.id] || 0;
+    const userPlans = developmentPlans?.filter(p => p.user_id === member.id) || [];
+    const iprCount = userPlans.length;
+    const activeIPR = userPlans.find(p => p.status === 'active');
+    const iprStatus = activeIPR ? 'Активный' : iprCount > 0 ? 'Есть планы' : 'Нет ИПР';
+
+    return {
+      id: member.id,
+      full_name: member.full_name,
+      email: member.email,
+      department: member.department,
+      branch: member.branch,
+      job_title: member.job_title,
+      mbti_type: member.mbti_type,
+      mbti_verified: member.mbti_verified,
+      quizzes_completed: quizzesCompleted,
+      learning_progress: learningProgress,
+      ipr_status: iprStatus,
+      ipr_count: iprCount,
+    };
+  });
+
   return (
     <div className="container mx-auto py-8 px-4 space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Dashboard руководителя</h1>
-        <p className="text-muted-foreground mt-1">
-          Обзор команды, KPI и зрелость трансформации
-        </p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Dashboard руководителя</h1>
+          <p className="text-muted-foreground mt-1">
+            Обзор команды, KPI и зрелость трансформации
+          </p>
+        </div>
+        <TeamExportButton teamMembers={exportData} />
       </div>
 
       {/* KPI Cards */}

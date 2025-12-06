@@ -6,31 +6,25 @@ import { useRouter } from 'next/navigation';
 import {
   DevelopmentPlan,
   DevelopmentGoal,
+  DevelopmentGoalWithMilestones,
   GoalCategory,
   GoalPriority,
-  GoalStatus,
+  GoalMilestone,
   PLAN_STATUS_LABELS,
-  GOAL_STATUS_LABELS,
   calculatePlanProgress,
 } from '@/types/ipr';
 import { GoalCard } from '@/components/ipr/GoalCard';
 import { CreateGoalDialog } from '@/components/ipr/CreateGoalDialog';
+import { GoalEditor } from '@/components/ipr/GoalEditor';
+import { MilestoneManager } from '@/components/ipr/MilestoneManager';
+import { ExportButton, type ExportFormat } from '@/components/export/ExportButton';
+import { exportIPRToPDF } from '@/lib/export/pdf';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Skeleton } from '@/components/ui/skeleton';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { ArrowLeft, Calendar, Edit, Play, CheckCircle, Archive } from 'lucide-react';
+import { ArrowLeft, Calendar, Play, CheckCircle, Archive } from 'lucide-react';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 
@@ -44,13 +38,13 @@ export default function PlanPage({ params }: PlanPageProps) {
   const supabase = createClient();
   const [plan, setPlan] = useState<DevelopmentPlan | null>(null);
   const [goals, setGoals] = useState<DevelopmentGoal[]>([]);
+  const [goalsWithMilestones, setGoalsWithMilestones] = useState<DevelopmentGoalWithMilestones[]>([]);
   const [mbtiType, setMbtiType] = useState<string | null>(null);
+  const [userName, setUserName] = useState<string>('');
   const [loading, setLoading] = useState(true);
   const [selectedGoal, setSelectedGoal] = useState<DevelopmentGoal | null>(null);
   const [editGoalOpen, setEditGoalOpen] = useState(false);
-  const [goalProgress, setGoalProgress] = useState(0);
-  const [goalStatus, setGoalStatus] = useState<GoalStatus>('not_started');
-  const [saving, setSaving] = useState(false);
+  const [showMilestones, setShowMilestones] = useState(false);
 
   useEffect(() => {
     fetchPlan();
@@ -85,14 +79,36 @@ export default function PlanPage({ params }: PlanPageProps) {
 
       setGoals(goalsData || []);
 
-      // Fetch user's MBTI type
+      // Fetch milestones for all goals
+      if (goalsData && goalsData.length > 0) {
+        const goalIds = goalsData.map(g => g.id);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const { data: milestonesData } = await (supabase
+          .from('goal_milestones') as any)
+          .select('*')
+          .in('goal_id', goalIds)
+          .order('due_date') as { data: GoalMilestone[] | null };
+
+        // Combine goals with milestones
+        const goalsWithMilestonesData: DevelopmentGoalWithMilestones[] = goalsData.map(goal => ({
+          ...goal,
+          milestones: milestonesData?.filter(m => m.goal_id === goal.id) || [],
+        }));
+
+        setGoalsWithMilestones(goalsWithMilestonesData);
+      } else {
+        setGoalsWithMilestones([]);
+      }
+
+      // Fetch user's profile (MBTI type and name)
       const { data: profile } = await supabase
         .from('profiles')
-        .select('mbti_type')
+        .select('mbti_type, full_name')
         .eq('id', user.id)
-        .single() as { data: { mbti_type: string | null } | null };
+        .single() as { data: { mbti_type: string | null; full_name: string | null } | null };
 
       setMbtiType(profile?.mbti_type || null);
+      setUserName(profile?.full_name || 'Пользователь');
     } catch (error) {
       console.error('Error fetching plan:', error);
     } finally {
@@ -120,34 +136,12 @@ export default function PlanPage({ params }: PlanPageProps) {
     if (data) setGoals([...goals, data]);
   }
 
-  async function handleUpdateGoal() {
-    if (!selectedGoal) return;
-    setSaving(true);
+  function handleGoalUpdated(updatedGoal: DevelopmentGoal) {
+    setGoals(goals.map((g) => (g.id === updatedGoal.id ? updatedGoal : g)));
+  }
 
-    try {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { error } = await (supabase
-        .from('development_goals') as any)
-        .update({
-          progress_percent: goalProgress,
-          status: goalStatus,
-          completed_at: goalStatus === 'completed' ? new Date().toISOString() : null,
-        })
-        .eq('id', selectedGoal.id);
-
-      if (error) throw error;
-
-      setGoals(goals.map((g) =>
-        g.id === selectedGoal.id
-          ? { ...g, progress_percent: goalProgress, status: goalStatus }
-          : g
-      ));
-      setEditGoalOpen(false);
-    } catch (error) {
-      console.error('Error updating goal:', error);
-    } finally {
-      setSaving(false);
-    }
+  function handleGoalDeleted(goalId: string) {
+    setGoals(goals.filter((g) => g.id !== goalId));
   }
 
   async function handleUpdatePlanStatus(newStatus: 'active' | 'completed' | 'archived') {
@@ -169,9 +163,23 @@ export default function PlanPage({ params }: PlanPageProps) {
 
   function openGoalEdit(goal: DevelopmentGoal) {
     setSelectedGoal(goal);
-    setGoalProgress(goal.progress_percent);
-    setGoalStatus(goal.status);
     setEditGoalOpen(true);
+    setShowMilestones(false);
+  }
+
+  function openMilestones(goal: DevelopmentGoal) {
+    setSelectedGoal(goal);
+    setShowMilestones(true);
+    setEditGoalOpen(false);
+  }
+
+  async function handleExport(format: ExportFormat) {
+    if (!plan) return;
+
+    if (format === 'pdf') {
+      await exportIPRToPDF(plan, goalsWithMilestones, userName);
+    }
+    // Excel format not implemented for IPR
   }
 
   if (loading) {
@@ -240,6 +248,12 @@ export default function PlanPage({ params }: PlanPageProps) {
               )}
             </div>
             <div className="flex gap-2">
+              <ExportButton
+                onExport={handleExport}
+                formats={['pdf']}
+                size="sm"
+                variant="outline"
+              />
               {plan.status === 'draft' && (
                 <Button size="sm" onClick={() => handleUpdatePlanStatus('active')}>
                   <Play className="w-4 h-4 mr-2" />
@@ -315,74 +329,52 @@ export default function PlanPage({ params }: PlanPageProps) {
           </CardContent>
         </Card>
       ) : (
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {goals.map((goal) => (
-            <GoalCard
-              key={goal.id}
-              goal={goal}
-              onClick={() => openGoalEdit(goal)}
-            />
-          ))}
+        <div className="space-y-6">
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {goals.map((goal) => (
+              <div key={goal.id} className="space-y-2">
+                <GoalCard goal={goal} onClick={() => openGoalEdit(goal)} />
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="w-full"
+                  onClick={() => openMilestones(goal)}
+                >
+                  Управление этапами
+                </Button>
+              </div>
+            ))}
+          </div>
+
+          {/* Milestone Manager */}
+          {showMilestones && selectedGoal && (
+            <div className="mt-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold">
+                  Этапы для: {selectedGoal.title}
+                </h3>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowMilestones(false)}
+                >
+                  Закрыть
+                </Button>
+              </div>
+              <MilestoneManager goalId={selectedGoal.id} />
+            </div>
+          )}
         </div>
       )}
 
-      {/* Edit Goal Dialog */}
-      <Dialog open={editGoalOpen} onOpenChange={setEditGoalOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Обновить прогресс</DialogTitle>
-            <DialogDescription>
-              {selectedGoal?.title}
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label>Статус</Label>
-              <select
-                value={goalStatus}
-                onChange={(e) => setGoalStatus(e.target.value as GoalStatus)}
-                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-              >
-                {Object.entries(GOAL_STATUS_LABELS).map(([key, { label }]) => (
-                  <option key={key} value={key}>
-                    {label}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div className="space-y-2">
-              <div className="flex justify-between">
-                <Label>Прогресс</Label>
-                <span className="text-sm text-muted-foreground">{goalProgress}%</span>
-              </div>
-              <Input
-                type="range"
-                min={0}
-                max={100}
-                step={5}
-                value={goalProgress}
-                onChange={(e) => setGoalProgress(Number(e.target.value))}
-                className="w-full"
-              />
-            </div>
-
-            {goalStatus === 'completed' && goalProgress < 100 && (
-              <p className="text-sm text-orange-600">
-                Рекомендуется установить прогресс 100% для завершённых целей
-              </p>
-            )}
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setEditGoalOpen(false)}>
-              Отмена
-            </Button>
-            <Button onClick={handleUpdateGoal} disabled={saving}>
-              {saving ? 'Сохранение...' : 'Сохранить'}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      {/* Goal Editor Dialog */}
+      <GoalEditor
+        goal={selectedGoal}
+        open={editGoalOpen}
+        onOpenChange={setEditGoalOpen}
+        onGoalUpdated={handleGoalUpdated}
+        onGoalDeleted={handleGoalDeleted}
+      />
     </div>
   );
 }

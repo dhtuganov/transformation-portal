@@ -1,9 +1,9 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
-import { getAllContent } from '@/lib/mdx/content'
+import { getAllContent, filterContent } from '@/lib/mdx/content'
 import { ContentCard } from '@/components/learning/ContentCard'
+import { LearningFilters } from '@/components/learning/LearningFilters'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Badge } from '@/components/ui/badge'
 import { BookOpen, Star, Clock, CheckCircle } from 'lucide-react'
 import type { MBTIType } from '@/types/database'
@@ -13,6 +13,13 @@ export const dynamic = 'force-dynamic'
 export const metadata = {
   title: 'Обучение | Otrar Transformation Portal',
   description: 'Библиотека обучающих материалов',
+}
+
+interface SearchParams {
+  q?: string
+  category?: string
+  difficulty?: 'beginner' | 'intermediate' | 'advanced'
+  mbti?: string
 }
 
 // DEMO MODE flag - set to false when connecting real Supabase
@@ -25,7 +32,13 @@ const MOCK_PROGRESS = [
   { content_id: 'transformation/adkar-model', status: 'in_progress', progress_percent: 45 },
 ]
 
-export default async function LearningPage() {
+export default async function LearningPage({
+  searchParams,
+}: {
+  searchParams: Promise<SearchParams>
+}) {
+  const params = await searchParams
+
   let profile: { mbti_type: string | null } | null = MOCK_PROFILE
   let progressData: Array<{ content_id: string; status: string; progress_percent: number }> | null = MOCK_PROGRESS
 
@@ -66,6 +79,14 @@ export default async function LearningPage() {
   // Get all content
   const allContent = getAllContent()
 
+  // Apply filters from URL params
+  const filteredContent = filterContent(allContent, {
+    query: params.q,
+    categories: params.category?.split(',').filter(Boolean),
+    difficulty: params.difficulty,
+    mbtiTypes: params.mbti?.split(',').filter(Boolean),
+  })
+
   // Filter content by user's MBTI type for recommendations
   const userMbtiType = profile?.mbti_type as MBTIType | null
   const recommendedContent = userMbtiType
@@ -76,14 +97,12 @@ export default async function LearningPage() {
       )
     : []
 
-  // Group content by category
-  const mbtiContent = allContent.filter((item) => item.category === 'mbti')
-  const skillsContent = allContent.filter((item) => item.category === 'skills')
-  const transformationContent = allContent.filter((item) => item.category === 'transformation')
-
   // Stats
   const completedCount = progressData?.filter((p) => p.status === 'completed').length || 0
   const inProgressCount = progressData?.filter((p) => p.status === 'in_progress').length || 0
+
+  // Check if filters are active
+  const hasActiveFilters = !!(params.q || params.category || params.difficulty || params.mbti)
 
   return (
     <div className="space-y-6">
@@ -106,130 +125,79 @@ export default async function LearningPage() {
         </div>
       </div>
 
-      {/* Recommended Section */}
-      {recommendedContent.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Star className="h-5 w-5 text-yellow-500" />
-              Рекомендовано для вас
-            </CardTitle>
-            <CardDescription>
-              Материалы, подобранные на основе вашего MBTI-типа {userMbtiType}
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {recommendedContent.slice(0, 3).map((content) => (
-                <ContentCard
-                  key={content.slug}
-                  content={content}
-                  progress={progressMap.get(content.slug) as { status: 'not_started' | 'in_progress' | 'completed'; progress_percent: number } | undefined}
-                />
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* All Content Tabs */}
-      <Tabs defaultValue="all" className="space-y-4">
-        <TabsList>
-          <TabsTrigger value="all" className="flex items-center gap-1">
-            <BookOpen className="h-4 w-4" />
-            Все ({allContent.length})
-          </TabsTrigger>
-          <TabsTrigger value="mbti">MBTI ({mbtiContent.length})</TabsTrigger>
-          <TabsTrigger value="skills">Навыки ({skillsContent.length})</TabsTrigger>
-          <TabsTrigger value="transformation">Трансформация ({transformationContent.length})</TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="all" className="space-y-4">
-          {allContent.length > 0 ? (
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {allContent.map((content) => (
-                <ContentCard
-                  key={content.slug}
-                  content={content}
-                  progress={progressMap.get(content.slug) as { status: 'not_started' | 'in_progress' | 'completed'; progress_percent: number } | undefined}
-                />
-              ))}
-            </div>
-          ) : (
+      {/* Search and Filter Section */}
+      <div className="grid gap-6 md:grid-cols-[1fr_300px]">
+        <div className="space-y-6">
+          {/* Recommended Section - Only show if no active filters */}
+          {!hasActiveFilters && recommendedContent.length > 0 && (
             <Card>
-              <CardContent className="py-12 text-center">
-                <BookOpen className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                <h3 className="text-lg font-medium mb-2">Материалы скоро появятся</h3>
-                <p className="text-sm text-muted-foreground">
-                  Мы работаем над созданием обучающего контента
-                </p>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Star className="h-5 w-5 text-yellow-500" />
+                  Рекомендовано для вас
+                </CardTitle>
+                <CardDescription>
+                  Материалы, подобранные на основе вашего MBTI-типа {userMbtiType}
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-2">
+                  {recommendedContent.slice(0, 4).map((content) => (
+                    <ContentCard
+                      key={content.slug}
+                      content={content}
+                      progress={progressMap.get(content.slug) as { status: 'not_started' | 'in_progress' | 'completed'; progress_percent: number } | undefined}
+                    />
+                  ))}
+                </div>
               </CardContent>
             </Card>
           )}
-        </TabsContent>
 
-        <TabsContent value="mbti" className="space-y-4">
-          {mbtiContent.length > 0 ? (
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {mbtiContent.map((content) => (
-                <ContentCard
-                  key={content.slug}
-                  content={content}
-                  progress={progressMap.get(content.slug) as { status: 'not_started' | 'in_progress' | 'completed'; progress_percent: number } | undefined}
-                />
-              ))}
+          {/* Results */}
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <h2 className="text-xl font-semibold">
+                {hasActiveFilters ? 'Результаты поиска' : 'Все материалы'}
+              </h2>
+              <Badge variant="secondary">
+                {filteredContent.length} {filteredContent.length === 1 ? 'материал' : 'материалов'}
+              </Badge>
             </div>
-          ) : (
-            <EmptyState category="MBTI" />
-          )}
-        </TabsContent>
 
-        <TabsContent value="skills" className="space-y-4">
-          {skillsContent.length > 0 ? (
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {skillsContent.map((content) => (
-                <ContentCard
-                  key={content.slug}
-                  content={content}
-                  progress={progressMap.get(content.slug) as { status: 'not_started' | 'in_progress' | 'completed'; progress_percent: number } | undefined}
-                />
-              ))}
-            </div>
-          ) : (
-            <EmptyState category="Навыки" />
-          )}
-        </TabsContent>
+            {filteredContent.length > 0 ? (
+              <div className="grid gap-4 md:grid-cols-2">
+                {filteredContent.map((content) => (
+                  <ContentCard
+                    key={content.slug}
+                    content={content}
+                    progress={progressMap.get(content.slug) as { status: 'not_started' | 'in_progress' | 'completed'; progress_percent: number } | undefined}
+                  />
+                ))}
+              </div>
+            ) : (
+              <Card>
+                <CardContent className="py-12 text-center">
+                  <BookOpen className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                  <h3 className="text-lg font-medium mb-2">
+                    {hasActiveFilters ? 'Ничего не найдено' : 'Материалы скоро появятся'}
+                  </h3>
+                  <p className="text-sm text-muted-foreground">
+                    {hasActiveFilters
+                      ? 'Попробуйте изменить параметры поиска или фильтры'
+                      : 'Мы работаем над созданием обучающего контента'}
+                  </p>
+                </CardContent>
+              </Card>
+            )}
+          </div>
+        </div>
 
-        <TabsContent value="transformation" className="space-y-4">
-          {transformationContent.length > 0 ? (
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {transformationContent.map((content) => (
-                <ContentCard
-                  key={content.slug}
-                  content={content}
-                  progress={progressMap.get(content.slug) as { status: 'not_started' | 'in_progress' | 'completed'; progress_percent: number } | undefined}
-                />
-              ))}
-            </div>
-          ) : (
-            <EmptyState category="Трансформация" />
-          )}
-        </TabsContent>
-      </Tabs>
+        {/* Filters Sidebar */}
+        <div className="md:sticky md:top-6 md:h-fit">
+          <LearningFilters />
+        </div>
+      </div>
     </div>
-  )
-}
-
-function EmptyState({ category }: { category: string }) {
-  return (
-    <Card>
-      <CardContent className="py-12 text-center">
-        <BookOpen className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-        <h3 className="text-lg font-medium mb-2">Материалы в разделе «{category}» скоро появятся</h3>
-        <p className="text-sm text-muted-foreground">
-          Мы работаем над созданием контента
-        </p>
-      </CardContent>
-    </Card>
   )
 }

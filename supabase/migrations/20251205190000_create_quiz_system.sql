@@ -3,10 +3,21 @@
 -- Date: 2025-12-05
 
 -- ===========================================
+-- HELPER FUNCTION (if not exists)
+-- ===========================================
+CREATE OR REPLACE FUNCTION public.update_updated_at()
+RETURNS TRIGGER AS $$
+BEGIN
+  NEW.updated_at = NOW();
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- ===========================================
 -- QUIZZES TABLE (metadata for quizzes)
 -- ===========================================
 CREATE TABLE public.quizzes (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   slug TEXT UNIQUE NOT NULL,
   title TEXT NOT NULL,
   description TEXT,
@@ -32,7 +43,7 @@ CREATE TABLE public.quizzes (
 -- QUIZ QUESTIONS TABLE
 -- ===========================================
 CREATE TABLE public.quiz_questions (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   quiz_id UUID REFERENCES public.quizzes(id) ON DELETE CASCADE,
   question_order INTEGER NOT NULL,
   question_type TEXT DEFAULT 'single_choice' CHECK (question_type IN ('single_choice', 'multiple_choice', 'scale', 'text', 'mbti_pair')),
@@ -50,7 +61,7 @@ CREATE TABLE public.quiz_questions (
 -- QUIZ ATTEMPTS TABLE (user sessions)
 -- ===========================================
 CREATE TABLE public.quiz_attempts (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID REFERENCES public.profiles(id) ON DELETE CASCADE,
   quiz_id UUID REFERENCES public.quizzes(id) ON DELETE CASCADE,
   status TEXT DEFAULT 'in_progress' CHECK (status IN ('in_progress', 'completed', 'abandoned')),
@@ -68,7 +79,7 @@ CREATE TABLE public.quiz_attempts (
 -- QUIZ ANSWERS TABLE (individual answers)
 -- ===========================================
 CREATE TABLE public.quiz_answers (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   attempt_id UUID REFERENCES public.quiz_attempts(id) ON DELETE CASCADE,
   question_id UUID REFERENCES public.quiz_questions(id) ON DELETE CASCADE,
   user_answer JSONB,

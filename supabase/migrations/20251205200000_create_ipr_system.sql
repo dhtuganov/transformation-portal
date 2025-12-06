@@ -6,7 +6,7 @@
 -- DEVELOPMENT PLANS TABLE (ИПР)
 -- ===========================================
 CREATE TABLE public.development_plans (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID REFERENCES public.profiles(id) ON DELETE CASCADE,
   title TEXT NOT NULL,
   description TEXT,
@@ -23,7 +23,7 @@ CREATE TABLE public.development_plans (
 -- DEVELOPMENT GOALS TABLE (Цели развития)
 -- ===========================================
 CREATE TABLE public.development_goals (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   plan_id UUID REFERENCES public.development_plans(id) ON DELETE CASCADE,
   title TEXT NOT NULL,
   description TEXT,
@@ -44,7 +44,7 @@ CREATE TABLE public.development_goals (
 -- GOAL MILESTONES TABLE (Этапы целей)
 -- ===========================================
 CREATE TABLE public.goal_milestones (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   goal_id UUID REFERENCES public.development_goals(id) ON DELETE CASCADE,
   title TEXT NOT NULL,
   description TEXT,
@@ -58,7 +58,7 @@ CREATE TABLE public.goal_milestones (
 -- GOAL COMMENTS TABLE (Комментарии к целям)
 -- ===========================================
 CREATE TABLE public.goal_comments (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   goal_id UUID REFERENCES public.development_goals(id) ON DELETE CASCADE,
   author_id UUID REFERENCES public.profiles(id) ON DELETE SET NULL,
   content TEXT NOT NULL,
