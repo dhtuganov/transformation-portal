@@ -66,6 +66,18 @@ export function Navbar() {
               Обучение
             </Link>
             <Link
+              href="/dashboard/quizzes"
+              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+            >
+              Тесты
+            </Link>
+            <Link
+              href="/dashboard/development"
+              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+            >
+              ИПР
+            </Link>
+            <Link
               href="/dashboard/profile"
               className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
             >
