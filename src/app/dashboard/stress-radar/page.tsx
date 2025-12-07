@@ -89,7 +89,7 @@ export default function StressRadarPage() {
       .from('profiles')
       .select('mbti_type')
       .eq('id', user.id)
-      .single()
+      .single() as { data: { mbti_type: string | null } | null }
 
     if (profile?.mbti_type) {
       setUserType(profile.mbti_type as MBTIType)
