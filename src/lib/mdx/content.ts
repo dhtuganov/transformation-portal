@@ -133,7 +133,7 @@ export function filterContent(items: ContentItem[], filters: ContentFilters): Co
     const query = filters.query.toLowerCase().trim()
     filtered = filtered.filter(
       (item) =>
-        item.title.toLowerCase().includes(query) ||
+        item.title?.toLowerCase().includes(query) ||
         item.description?.toLowerCase().includes(query)
     )
   }

@@ -10,6 +10,20 @@ import {
   QuestionBox,
   Callout,
 } from './MBTIComponents'
+import {
+  SegmentGrid,
+  ProcessFlow,
+  Checklist,
+  ComparisonCards,
+  StatCards,
+  KeyConcept,
+  LearningObjectives,
+  Exercise,
+  Solution,
+  Glossary,
+  Quiz,
+  NextSteps,
+} from './ContentComponents'
 
 interface MDXRendererProps {
   mdxSource: MDXRemoteSerializeResult
@@ -90,7 +104,7 @@ const components = {
   ),
   code: (props: React.ComponentProps<'code'>) => {
     const { className, children, ...rest } = props
-    // Check if this is an inline code or code block
+    // Check if this is an inline code or code block (code inside pre)
     const isInline = !className
 
     if (isInline) {
@@ -104,8 +118,9 @@ const components = {
       )
     }
 
+    // Code block inside <pre> - ensure monospace font
     return (
-      <code className={className} {...rest}>
+      <code className={`${className || ''} font-mono block whitespace-pre`} {...rest}>
         {children}
       </code>
     )
@@ -149,6 +164,19 @@ const components = {
   CognitiveFunctionsStack,
   QuestionBox,
   Callout,
+  // Content components (new)
+  SegmentGrid,
+  ProcessFlow,
+  Checklist,
+  ComparisonCards,
+  StatCards,
+  KeyConcept,
+  LearningObjectives,
+  Exercise,
+  Solution,
+  Glossary,
+  Quiz,
+  NextSteps,
 }
 
 export function MDXRenderer({ mdxSource }: MDXRendererProps) {

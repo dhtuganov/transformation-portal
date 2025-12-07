@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Progress } from '@/components/ui/progress'
 import { TypeBadge } from '@/components/mbti/TypeBadge'
 import { StatCard } from '@/components/dashboard/StatCard'
-import { BookOpen, User, Users, TrendingUp } from 'lucide-react'
+import { BookOpen, User, Users, TrendingUp, Sparkles, ClipboardCheck, Target, Brain, Moon, Activity, Heart, Compass } from 'lucide-react'
 import type { MBTIType } from '@/types/database'
 
 export const dynamic = 'force-dynamic'
@@ -218,24 +218,78 @@ export default async function DashboardPage() {
           <CardTitle>Быстрые действия</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid gap-4 md:grid-cols-3">
+          <div className="grid gap-4 grid-cols-2 md:grid-cols-4">
+            <Button variant="outline" asChild className="h-auto py-4 flex-col gap-2">
+              <Link href="/dashboard/test-insights">
+                <Sparkles className="h-6 w-6 text-purple-500" />
+                <span className="text-sm">AI Инсайты</span>
+              </Link>
+            </Button>
+            <Button variant="outline" asChild className="h-auto py-4 flex-col gap-2">
+              <Link href="/dashboard/quizzes">
+                <ClipboardCheck className="h-6 w-6 text-blue-500" />
+                <span className="text-sm">Тесты</span>
+              </Link>
+            </Button>
             <Button variant="outline" asChild className="h-auto py-4 flex-col gap-2">
               <Link href="/dashboard/learning">
-                <BookOpen className="h-6 w-6" />
-                <span>Библиотека обучения</span>
+                <BookOpen className="h-6 w-6 text-green-500" />
+                <span className="text-sm">Обучение</span>
+              </Link>
+            </Button>
+            <Button variant="outline" asChild className="h-auto py-4 flex-col gap-2">
+              <Link href="/dashboard/development">
+                <Target className="h-6 w-6 text-orange-500" />
+                <span className="text-sm">ИПР</span>
               </Link>
             </Button>
             <Button variant="outline" asChild className="h-auto py-4 flex-col gap-2">
               <Link href="/dashboard/profile">
-                <User className="h-6 w-6" />
-                <span>Мой профиль</span>
+                <User className="h-6 w-6 text-slate-500" />
+                <span className="text-sm">Профиль</span>
+              </Link>
+            </Button>
+            <Button variant="outline" asChild className="h-auto py-4 flex-col gap-2">
+              <Link href="/dashboard/cognitive">
+                <Brain className="h-6 w-6 text-pink-500" />
+                <span className="text-sm">Функции</span>
+              </Link>
+            </Button>
+            <Button variant="outline" asChild className="h-auto py-4 flex-col gap-2">
+              <Link href="/dashboard/shadow-work">
+                <Moon className="h-6 w-6 text-purple-600" />
+                <span className="text-sm">Shadow Work</span>
+              </Link>
+            </Button>
+            <Button variant="outline" asChild className="h-auto py-4 flex-col gap-2">
+              <Link href="/dashboard/stress-radar">
+                <Activity className="h-6 w-6 text-red-500" />
+                <span className="text-sm">Stress Radar</span>
+              </Link>
+            </Button>
+            <Button variant="outline" asChild className="h-auto py-4 flex-col gap-2">
+              <Link href="/dashboard/type-simulator">
+                <Users className="h-6 w-6 text-indigo-500" />
+                <span className="text-sm">Симулятор</span>
+              </Link>
+            </Button>
+            <Button variant="outline" asChild className="h-auto py-4 flex-col gap-2">
+              <Link href="/dashboard/relationships">
+                <Heart className="h-6 w-6 text-pink-500" />
+                <span className="text-sm">Отношения</span>
+              </Link>
+            </Button>
+            <Button variant="outline" asChild className="h-auto py-4 flex-col gap-2">
+              <Link href="/dashboard/career">
+                <Compass className="h-6 w-6 text-emerald-500" />
+                <span className="text-sm">Карьера</span>
               </Link>
             </Button>
             {profile?.role && ['manager', 'executive', 'admin'].includes(profile.role) && (
               <Button variant="outline" asChild className="h-auto py-4 flex-col gap-2">
                 <Link href="/dashboard/team">
-                  <Users className="h-6 w-6" />
-                  <span>Моя команда</span>
+                  <Users className="h-6 w-6 text-teal-500" />
+                  <span className="text-sm">Команда</span>
                 </Link>
               </Button>
             )}

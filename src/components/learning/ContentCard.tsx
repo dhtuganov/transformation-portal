@@ -12,10 +12,43 @@ interface ContentCardProps {
   }
 }
 
-const CATEGORY_LABELS: Record<string, string> = {
-  mbti: 'MBTI',
-  skills: 'Навыки',
-  transformation: 'Трансформация',
+// Main category labels with icons
+const MAIN_CATEGORY_LABELS: Record<string, { label: string; icon: string }> = {
+  business: { label: 'Бизнес', icon: '💼' },
+  personal: { label: 'Личное развитие', icon: '🧠' },
+  industry: { label: 'Отрасль', icon: '✈️' },
+}
+
+// Subcategory labels for display
+const SUBCATEGORY_LABELS: Record<string, string> = {
+  // Business
+  'project-management': 'Управление проектами',
+  leadership: 'Лидерство',
+  negotiation: 'Переговоры',
+  'team-management': 'Управление командой',
+  'knowledge-management': 'Управление знаниями',
+  operations: 'Операции',
+  sales: 'Продажи',
+  marketing: 'Маркетинг',
+  finance: 'Финансы',
+  strategy: 'Стратегия',
+  // Personal
+  psychology: 'Психология',
+  'psychology/mbti': 'MBTI',
+  'time-management': 'Тайм-менеджмент',
+  'career-development': 'Карьера',
+  communication: 'Коммуникации',
+  'digital-skills': 'Digital',
+  'change-management': 'Change Management',
+  presentations: 'Презентации',
+  'problem-solving': 'Решение проблем',
+  'systems-thinking': 'Системное мышление',
+  // Industry
+  travel: 'Travel',
+  'travel/aviation': 'Авиация',
+  'travel/mice': 'MICE',
+  'travel/tourism': 'Туризм',
+  'travel/concierge': 'Консьерж',
 }
 
 const DIFFICULTY_LABELS: Record<string, { label: string; color: string }> = {
@@ -39,7 +72,8 @@ const ContentIcon = ({ type }: { type?: string }) => {
 
 export function ContentCard({ content, progress }: ContentCardProps) {
   const difficulty = DIFFICULTY_LABELS[content.difficulty || 'beginner']
-  const category = CATEGORY_LABELS[content.category || ''] || content.category
+  const mainCategory = MAIN_CATEGORY_LABELS[content.category || '']
+  const subcategory = SUBCATEGORY_LABELS[content.subcategory || ''] || content.subcategory
 
   return (
     <Link href={`/dashboard/learning/${content.slug}`}>
@@ -47,10 +81,15 @@ export function ContentCard({ content, progress }: ContentCardProps) {
         <CardHeader className="pb-3">
           <div className="flex items-start justify-between gap-2">
             <div className="flex items-center gap-2 text-muted-foreground">
+              {mainCategory && (
+                <span className="text-sm" title={mainCategory.label}>
+                  {mainCategory.icon}
+                </span>
+              )}
               <ContentIcon type={content.category} />
-              {category && (
+              {subcategory && (
                 <span className="text-xs uppercase tracking-wide">
-                  {category}
+                  {subcategory}
                 </span>
               )}
             </div>

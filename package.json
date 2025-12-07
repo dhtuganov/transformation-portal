@@ -8,9 +8,12 @@
     "start": "next start",
     "lint": "eslint",
     "sync-content": "tsx scripts/sync-content.ts",
-    "sync-content:cleanup": "tsx scripts/sync-content.ts --cleanup"
+    "sync-content:cleanup": "tsx scripts/sync-content.ts --cleanup",
+    "import-notion": "tsx scripts/import-notion.ts",
+    "import-notion:batch": "tsx scripts/import-notion.ts --batch"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.71.2",
     "@hookform/resolvers": "^5.2.2",
     "@radix-ui/react-avatar": "^1.1.11",
     "@radix-ui/react-dialog": "^1.1.15",
@@ -39,6 +42,7 @@
     "react-dom": "19.2.0",
     "react-hook-form": "^7.68.0",
     "recharts": "^3.5.1",
+    "remark-gfm": "^4.0.1",
     "sonner": "^2.0.7",
     "tailwind-merge": "^3.4.0",
     "xlsx": "^0.18.5",

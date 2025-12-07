@@ -19,10 +19,47 @@ interface FilterPanelProps {
   availableMbtiTypes?: string[]
 }
 
+// Main categories (top level)
+const MAIN_CATEGORIES = [
+  { value: 'business', label: 'Бизнес навыки', icon: '💼' },
+  { value: 'personal', label: 'Личное развитие', icon: '🧠' },
+  { value: 'industry', label: 'Отраслевые знания', icon: '✈️' },
+] as const
+
+// Subcategory labels for display
 const CATEGORY_LABELS: Record<string, string> = {
+  // Business
+  business: 'Бизнес навыки',
+  'project-management': 'Управление проектами',
+  leadership: 'Лидерство',
+  negotiation: 'Переговоры',
+  'team-management': 'Управление командой',
+  'knowledge-management': 'Управление знаниями',
+  operations: 'Операции',
+  sales: 'Продажи',
+  marketing: 'Маркетинг',
+  finance: 'Финансы',
+  strategy: 'Стратегия',
+  // Personal
+  personal: 'Личное развитие',
+  psychology: 'Психология',
+  'psychology/mbti': 'MBTI',
   mbti: 'MBTI',
-  skills: 'Навыки',
-  transformation: 'Трансформация',
+  'time-management': 'Тайм-менеджмент',
+  'career-development': 'Карьерное развитие',
+  communication: 'Коммуникации',
+  'digital-skills': 'Цифровые навыки',
+  'change-management': 'Управление изменениями',
+  presentations: 'Презентации',
+  'problem-solving': 'Решение проблем',
+  'systems-thinking': 'Системное мышление',
+  // Industry
+  industry: 'Отраслевые знания',
+  travel: 'Travel & Tourism',
+  'travel/aviation': 'Авиация',
+  'travel/mice': 'MICE',
+  'travel/tourism': 'Туризм',
+  'travel/concierge': 'Консьерж-сервис',
 }
 
 const DIFFICULTY_OPTIONS = [
@@ -41,7 +78,7 @@ const ALL_MBTI_TYPES: MBTIType[] = [
 export function FilterPanel({
   filters,
   onChange,
-  availableCategories = ['mbti', 'skills', 'transformation'],
+  availableCategories = ['business', 'personal', 'industry'],
   availableMbtiTypes = ALL_MBTI_TYPES,
 }: FilterPanelProps) {
   const toggleCategory = (category: string) => {
@@ -99,15 +136,16 @@ export function FilterPanel({
         {/* Category Filters */}
         <div className="space-y-2">
           <h4 className="text-sm font-medium text-muted-foreground">Категория</h4>
-          <div className="flex flex-wrap gap-2">
-            {availableCategories.map((category) => (
+          <div className="flex flex-col gap-2">
+            {MAIN_CATEGORIES.map((category) => (
               <Badge
-                key={category}
-                variant={filters.categories.includes(category) ? 'default' : 'outline'}
-                className="cursor-pointer"
-                onClick={() => toggleCategory(category)}
+                key={category.value}
+                variant={filters.categories.includes(category.value) ? 'default' : 'outline'}
+                className="cursor-pointer py-2 px-3 justify-start text-sm"
+                onClick={() => toggleCategory(category.value)}
               >
-                {CATEGORY_LABELS[category] || category}
+                <span className="mr-2">{category.icon}</span>
+                {category.label}
               </Badge>
             ))}
           </div>

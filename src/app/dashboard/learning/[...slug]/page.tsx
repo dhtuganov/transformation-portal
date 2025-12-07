@@ -1,6 +1,7 @@
 import { notFound, redirect } from 'next/navigation'
 import Link from 'next/link'
 import { serialize } from 'next-mdx-remote/serialize'
+import remarkGfm from 'remark-gfm'
 import { createClient } from '@/lib/supabase/server'
 import { getContentBySlug, getAllContent } from '@/lib/mdx/content'
 import { MDXRenderer } from '@/components/learning/MDXRenderer'
@@ -103,8 +104,12 @@ export default async function ArticlePage({ params }: PageProps) {
     notFound()
   }
 
-  // Serialize MDX
-  const mdxSource: MDXRemoteSerializeResult = await serialize(content.content)
+  // Serialize MDX with GFM support (tables, strikethrough, etc.)
+  const mdxSource: MDXRemoteSerializeResult = await serialize(content.content, {
+    mdxOptions: {
+      remarkPlugins: [remarkGfm],
+    },
+  })
 
   // Extract headings for TOC
   const headings = extractHeadings(content.content)
