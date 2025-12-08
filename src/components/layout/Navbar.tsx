@@ -21,7 +21,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from '@/components/ui/sheet'
-import { User, LogOut, Settings, Menu, Home, BookOpen, ClipboardCheck, Target, Sparkles, Users, LayoutDashboard, Shield } from 'lucide-react'
+import { User, LogOut, Settings, Menu, Home, BookOpen, ClipboardCheck, Target, Sparkles, Users, LayoutDashboard, Shield, TrendingUp } from 'lucide-react'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
 
@@ -81,7 +81,12 @@ export function Navbar() {
     { href: '/dashboard/team', label: 'Команда', icon: Users },
   ]
 
+  const executiveItems = [
+    { href: '/dashboard/strategy', label: 'Стратегия', icon: TrendingUp },
+  ]
+
   const isManager = profile?.role && ['manager', 'executive', 'admin'].includes(profile.role)
+  const isExecutive = profile?.role && ['executive', 'admin'].includes(profile.role)
   const isAdmin = profile?.role === 'admin'
 
   return (
@@ -135,6 +140,30 @@ export function Navbar() {
                           isActive(item.href)
                             ? "bg-primary text-primary-foreground"
                             : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                        )}
+                      >
+                        <item.icon className="h-4 w-4" />
+                        {item.label}
+                      </Link>
+                    ))}
+                  </>
+                )}
+
+                {isExecutive && (
+                  <>
+                    <div className="my-2 border-t" />
+                    <p className="px-3 py-1 text-xs font-semibold text-muted-foreground uppercase">
+                      Руководство
+                    </p>
+                    {executiveItems.map((item) => (
+                      <Link
+                        key={item.href}
+                        href={item.href}
+                        className={cn(
+                          "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+                          isActive(item.href)
+                            ? "bg-purple-600 text-white"
+                            : "text-purple-600 hover:bg-purple-50"
                         )}
                       >
                         <item.icon className="h-4 w-4" />
@@ -216,6 +245,20 @@ export function Navbar() {
                   isActive(item.href)
                     ? "bg-muted text-foreground"
                     : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                )}
+              >
+                {item.label}
+              </Link>
+            ))}
+            {isExecutive && executiveItems.map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={cn(
+                  "px-3 py-2 text-sm font-medium rounded-md transition-colors",
+                  isActive(item.href)
+                    ? "bg-purple-100 text-purple-700"
+                    : "text-purple-600 hover:text-purple-700 hover:bg-purple-50"
                 )}
               >
                 {item.label}

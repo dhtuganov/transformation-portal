@@ -53,27 +53,38 @@ export default function ShadowWorkPage() {
   }, [])
 
   const loadData = async () => {
+    console.log('[ShadowWork] Starting loadData...')
     try {
       const supabase = createClient()
 
       // Get user profile
+      console.log('[ShadowWork] Getting user...')
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) {
+        console.log('[ShadowWork] No user found')
         setLoading(false)
         return
       }
+      console.log('[ShadowWork] User found:', user.id)
 
-      const { data: profile } = await supabase
+      console.log('[ShadowWork] Getting profile...')
+      const { data: profile, error: profileError } = await supabase
         .from('profiles')
         .select('mbti_type')
         .eq('id', user.id)
-        .single() as { data: { mbti_type: string | null } | null }
+        .single() as { data: { mbti_type: string | null } | null; error: any }
+
+      if (profileError) {
+        console.error('[ShadowWork] Profile error:', profileError)
+      }
 
       if (profile?.mbti_type) {
         setUserType(profile.mbti_type as MBTIType)
+        console.log('[ShadowWork] User type:', profile.mbti_type)
       }
 
       // Get programs
+      console.log('[ShadowWork] Getting programs...')
       const { data: programsData, error: programsError } = await (supabase
         .from('shadow_work_programs') as any)
         .select('*')
@@ -81,14 +92,21 @@ export default function ShadowWorkPage() {
         .order('target_function')
 
       if (programsError) {
-        console.error('Error loading programs:', programsError)
+        console.error('[ShadowWork] Programs error:', programsError)
       }
+      console.log('[ShadowWork] Programs loaded:', programsData?.length || 0)
 
       // Get user enrollments
-      const { data: enrollmentsData } = await (supabase
+      console.log('[ShadowWork] Getting enrollments...')
+      const { data: enrollmentsData, error: enrollmentsError } = await (supabase
         .from('shadow_work_enrollments') as any)
         .select('*')
         .eq('user_id', user.id)
+
+      if (enrollmentsError) {
+        console.error('[ShadowWork] Enrollments error:', enrollmentsError)
+      }
+      console.log('[ShadowWork] Enrollments loaded:', enrollmentsData?.length || 0)
 
       // Merge programs with enrollments
       const programsWithEnrollment = (programsData || []).map((program: ShadowWorkProgram) => ({
@@ -97,9 +115,11 @@ export default function ShadowWorkPage() {
       }))
 
       setPrograms(programsWithEnrollment)
+      console.log('[ShadowWork] Data loaded successfully')
     } catch (error) {
-      console.error('Error in loadData:', error)
+      console.error('[ShadowWork] Error in loadData:', error)
     } finally {
+      console.log('[ShadowWork] Setting loading to false')
       setLoading(false)
     }
   }
@@ -204,6 +224,10 @@ export default function ShadowWorkPage() {
                 <h3 className="text-xl font-semibold">{recommendedProgram.title}</h3>
                 <p className="text-gray-600 mt-1">{recommendedProgram.description}</p>
                 <p className="text-sm text-gray-500 mt-2">
+                  <span className="font-medium">{recommendedProgram.target_function}</span>
+                  {' · '}
+                  {COGNITIVE_FUNCTION_DESCRIPTIONS[recommendedProgram.target_function]?.shortLabel}
+                  {' · '}
                   {COGNITIVE_FUNCTION_DESCRIPTIONS[recommendedProgram.target_function]?.name} — ваша подчинённая функция
                 </p>
                 <div className="mt-4">
@@ -257,7 +281,12 @@ export default function ShadowWorkPage() {
                     <div>
                       <CardTitle className="text-lg">{program.title}</CardTitle>
                       <CardDescription className="mt-1">
-                        {functionDesc?.name} ({program.target_function})
+                        <span className="font-medium">{program.target_function}</span>
+                        {functionDesc && (
+                          <span className="text-gray-500">
+                            {' · '}{functionDesc.shortLabel} · {functionDesc.name}
+                          </span>
+                        )}
                       </CardDescription>
                     </div>
                   </div>

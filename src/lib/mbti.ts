@@ -124,6 +124,7 @@ export const ALL_MBTI_TYPES: MBTIType[] = [
 export const COGNITIVE_FUNCTION_DESCRIPTIONS: Record<string, {
   name: string
   shortName: string
+  shortLabel: string  // Краткая ассоциация для UI
   description: string
   strengths: string[]
   challenges: string[]
@@ -131,6 +132,7 @@ export const COGNITIVE_FUNCTION_DESCRIPTIONS: Record<string, {
   Ni: {
     name: 'Интровертная интуиция',
     shortName: 'Ni',
+    shortLabel: 'Предвидение',
     description: 'Способность видеть глубинные паттерны и предвидеть будущее. Формирует единое видение из разрозненных данных.',
     strengths: ['Стратегическое мышление', 'Долгосрочное планирование', 'Понимание скрытых смыслов'],
     challenges: ['Чрезмерная сосредоточенность на будущем', 'Сложности с объяснением интуитивных выводов']
@@ -138,6 +140,7 @@ export const COGNITIVE_FUNCTION_DESCRIPTIONS: Record<string, {
   Ne: {
     name: 'Экстравертная интуиция',
     shortName: 'Ne',
+    shortLabel: 'Возможности',
     description: 'Генерация идей и возможностей. Видит связи между концепциями и наслаждается исследованием новых путей.',
     strengths: ['Креативность', 'Адаптивность', 'Видение возможностей'],
     challenges: ['Сложности с фокусировкой', 'Незавершённые проекты']
@@ -145,6 +148,7 @@ export const COGNITIVE_FUNCTION_DESCRIPTIONS: Record<string, {
   Ti: {
     name: 'Интровертное мышление',
     shortName: 'Ti',
+    shortLabel: 'Анализ',
     description: 'Глубокий логический анализ и построение внутренне согласованных систем. Стремится к точности понимания.',
     strengths: ['Точный анализ', 'Независимое мышление', 'Решение сложных проблем'],
     challenges: ['Перфекционизм', 'Сложности с принятием внешних авторитетов']
@@ -152,6 +156,7 @@ export const COGNITIVE_FUNCTION_DESCRIPTIONS: Record<string, {
   Te: {
     name: 'Экстравертное мышление',
     shortName: 'Te',
+    shortLabel: 'Организация',
     description: 'Организация внешнего мира для достижения целей. Ориентация на эффективность и результаты.',
     strengths: ['Организованность', 'Достижение целей', 'Принятие решений'],
     challenges: ['Может игнорировать эмоции', 'Чрезмерная прямолинейность']
@@ -159,6 +164,7 @@ export const COGNITIVE_FUNCTION_DESCRIPTIONS: Record<string, {
   Fi: {
     name: 'Интровертное чувство',
     shortName: 'Fi',
+    shortLabel: 'Ценности',
     description: 'Глубокие личные ценности и аутентичность. Стремление жить в согласии со своими убеждениями.',
     strengths: ['Аутентичность', 'Эмпатия', 'Моральная целостность'],
     challenges: ['Чрезмерная чувствительность', 'Сложности с компромиссами']
@@ -166,6 +172,7 @@ export const COGNITIVE_FUNCTION_DESCRIPTIONS: Record<string, {
   Fe: {
     name: 'Экстравертное чувство',
     shortName: 'Fe',
+    shortLabel: 'Гармония',
     description: 'Гармонизация социальных отношений и понимание групповой динамики. Забота о благополучии других.',
     strengths: ['Социальные навыки', 'Построение команд', 'Разрешение конфликтов'],
     challenges: ['Зависимость от мнения других', 'Игнорирование собственных потребностей']
@@ -173,6 +180,7 @@ export const COGNITIVE_FUNCTION_DESCRIPTIONS: Record<string, {
   Si: {
     name: 'Интровертное ощущение',
     shortName: 'Si',
+    shortLabel: 'Память',
     description: 'Детальная память и опора на проверенный опыт. Ценит традиции и надёжность.',
     strengths: ['Надёжность', 'Внимание к деталям', 'Сохранение традиций'],
     challenges: ['Сопротивление изменениям', 'Чрезмерная осторожность']
@@ -180,6 +188,7 @@ export const COGNITIVE_FUNCTION_DESCRIPTIONS: Record<string, {
   Se: {
     name: 'Экстравертное ощущение',
     shortName: 'Se',
+    shortLabel: 'Момент',
     description: 'Полное присутствие в настоящем моменте. Быстрая реакция на окружающую среду.',
     strengths: ['Наблюдательность', 'Практичность', 'Спонтанность'],
     challenges: ['Импульсивность', 'Сложности с долгосрочным планированием']

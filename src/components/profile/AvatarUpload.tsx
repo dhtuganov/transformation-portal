@@ -63,7 +63,7 @@ export function AvatarUpload({
       // Create a unique file name
       const fileExt = file.name.split('.').pop()
       const fileName = `${userId}-${Date.now()}.${fileExt}`
-      const filePath = `avatars/${fileName}`
+      const filePath = fileName  // Bucket is already 'avatars', no need for subfolder
 
       // Upload to Supabase Storage
       const { error: uploadError, data } = await supabase.storage

@@ -77,6 +77,28 @@ export async function middleware(request: NextRequest) {
     }
   }
 
+  // Protected strategy routes - only executive and admin
+  if (request.nextUrl.pathname.startsWith('/dashboard/strategy')) {
+    if (!user) {
+      const url = request.nextUrl.clone()
+      url.pathname = '/login'
+      return NextResponse.redirect(url)
+    }
+
+    // Check if user is executive or admin
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single() as { data: { role: string } | null }
+
+    if (!profile || !['executive', 'admin'].includes(profile.role)) {
+      const url = request.nextUrl.clone()
+      url.pathname = '/dashboard'
+      return NextResponse.redirect(url)
+    }
+  }
+
   // Redirect authenticated users from auth pages to dashboard
   if (user && (request.nextUrl.pathname === '/login' || request.nextUrl.pathname === '/register')) {
     const url = request.nextUrl.clone()

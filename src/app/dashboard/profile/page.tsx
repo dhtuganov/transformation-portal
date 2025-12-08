@@ -183,9 +183,7 @@ export default async function ProfilePage() {
               <div className="border-t pt-4 mt-4">
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-sm text-muted-foreground">Тип личности</span>
-                  <Badge variant={profile?.mbti_verified ? 'default' : 'secondary'}>
-                    {profile?.mbti_verified ? 'Подтверждён' : 'Не подтверждён'}
-                  </Badge>
+                  <Badge variant="default">Подтверждён</Badge>
                 </div>
                 <div className="flex items-center gap-3">
                   <TypeBadge type={mbtiType} size="lg" />
@@ -478,9 +476,7 @@ export default async function ProfilePage() {
                   <CardContent className="space-y-3">
                     <div className="flex justify-between text-sm">
                       <span className="text-muted-foreground">Статус</span>
-                      <Badge variant={profile?.mbti_verified ? 'default' : 'secondary'}>
-                        {profile?.mbti_verified ? 'Подтверждён' : 'Ожидает подтверждения'}
-                      </Badge>
+                      <Badge variant="default">Подтверждён</Badge>
                     </div>
                     {mbtiProfile?.assessed_by && (
                       <div className="flex justify-between text-sm">
