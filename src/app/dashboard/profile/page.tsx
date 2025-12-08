@@ -274,6 +274,16 @@ export default async function ProfilePage() {
                         <p className="font-bold text-red-600">{functions?.inferior}</p>
                       </div>
                     </div>
+
+                    {/* Link to detailed type page */}
+                    <div className="pt-4 border-t">
+                      <Button asChild className="w-full">
+                        <Link href="/dashboard/my-type">
+                          <Brain className="mr-2 h-4 w-4" />
+                          Узнать больше о моём типе
+                        </Link>
+                      </Button>
+                    </div>
                   </CardContent>
                 </Card>
 

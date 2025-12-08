@@ -21,7 +21,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from '@/components/ui/sheet'
-import { User, LogOut, Settings, Menu, Home, BookOpen, ClipboardCheck, Target, Sparkles, Users, LayoutDashboard, Shield, TrendingUp } from 'lucide-react'
+import { User, LogOut, Settings, Menu, Home, BookOpen, ClipboardCheck, Target, Sparkles, Users, LayoutDashboard, Shield, TrendingUp, Brain } from 'lucide-react'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
 
@@ -69,6 +69,7 @@ export function Navbar() {
   // Navigation items
   const navItems = [
     { href: '/dashboard', label: 'Главная', icon: Home },
+    { href: '/dashboard/my-type', label: 'Мой тип', icon: Brain },
     { href: '/dashboard/learning', label: 'Обучение', icon: BookOpen },
     { href: '/dashboard/quizzes', label: 'Тесты', icon: ClipboardCheck },
     { href: '/dashboard/development', label: 'ИПР', icon: Target },
