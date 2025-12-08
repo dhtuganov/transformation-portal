@@ -53,43 +53,55 @@ export default function ShadowWorkPage() {
   }, [])
 
   const loadData = async () => {
-    const supabase = createClient()
+    try {
+      const supabase = createClient()
 
-    // Get user profile
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return
+      // Get user profile
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) {
+        setLoading(false)
+        return
+      }
 
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('mbti_type')
-      .eq('id', user.id)
-      .single() as { data: { mbti_type: string | null } | null }
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('mbti_type')
+        .eq('id', user.id)
+        .single() as { data: { mbti_type: string | null } | null }
 
-    if (profile?.mbti_type) {
-      setUserType(profile.mbti_type as MBTIType)
+      if (profile?.mbti_type) {
+        setUserType(profile.mbti_type as MBTIType)
+      }
+
+      // Get programs
+      const { data: programsData, error: programsError } = await (supabase
+        .from('shadow_work_programs') as any)
+        .select('*')
+        .eq('is_active', true)
+        .order('target_function')
+
+      if (programsError) {
+        console.error('Error loading programs:', programsError)
+      }
+
+      // Get user enrollments
+      const { data: enrollmentsData } = await (supabase
+        .from('shadow_work_enrollments') as any)
+        .select('*')
+        .eq('user_id', user.id)
+
+      // Merge programs with enrollments
+      const programsWithEnrollment = (programsData || []).map((program: ShadowWorkProgram) => ({
+        ...program,
+        enrollment: enrollmentsData?.find((e: ShadowWorkEnrollment) => e.program_id === program.id) || null
+      }))
+
+      setPrograms(programsWithEnrollment)
+    } catch (error) {
+      console.error('Error in loadData:', error)
+    } finally {
+      setLoading(false)
     }
-
-    // Get programs
-    const { data: programsData } = await (supabase
-      .from('shadow_work_programs') as any)
-      .select('*')
-      .eq('is_active', true)
-      .order('target_function')
-
-    // Get user enrollments
-    const { data: enrollmentsData } = await (supabase
-      .from('shadow_work_enrollments') as any)
-      .select('*')
-      .eq('user_id', user.id)
-
-    // Merge programs with enrollments
-    const programsWithEnrollment = (programsData || []).map((program: ShadowWorkProgram) => ({
-      ...program,
-      enrollment: enrollmentsData?.find((e: ShadowWorkEnrollment) => e.program_id === program.id) || null
-    }))
-
-    setPrograms(programsWithEnrollment)
-    setLoading(false)
   }
 
   const enrollInProgram = async (programId: string) => {

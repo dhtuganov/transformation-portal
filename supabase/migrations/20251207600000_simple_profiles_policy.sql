@@ -27,10 +27,11 @@ DROP POLICY IF EXISTS "profiles_update" ON public.profiles;
 DROP POLICY IF EXISTS "profiles_update_admin" ON public.profiles;
 DROP POLICY IF EXISTS "profiles_update_own" ON public.profiles;
 
--- Drop old views and functions if exist
+-- Drop old views and functions if exist (excluding those with dependencies)
 DROP VIEW IF EXISTS public.profiles_internal;
-DROP FUNCTION IF EXISTS public.get_user_tenant_id();
-DROP FUNCTION IF EXISTS public.get_user_role(UUID);
+-- Note: These functions have dependent policies, keeping them:
+-- DROP FUNCTION IF EXISTS public.get_user_tenant_id();
+-- DROP FUNCTION IF EXISTS public.get_user_role(UUID);
 
 -- ===========================================
 -- CREATE SIMPLE NON-RECURSIVE POLICIES
