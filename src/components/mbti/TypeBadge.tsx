@@ -4,7 +4,7 @@ import type { MBTIType } from '@/types/database'
 
 interface TypeBadgeProps {
   type: MBTIType
-  size?: 'sm' | 'md' | 'lg'
+  size?: 'xs' | 'sm' | 'md' | 'lg'
   showName?: boolean
 }
 
@@ -13,6 +13,7 @@ export function TypeBadge({ type, size = 'md', showName = false }: TypeBadgeProp
   const name = getTypeName(type, 'ru')
 
   const sizeClasses = {
+    xs: 'text-[10px] px-1.5 py-0.5',
     sm: 'text-xs px-2 py-0.5',
     md: 'text-sm px-3 py-1',
     lg: 'text-base px-4 py-1.5',

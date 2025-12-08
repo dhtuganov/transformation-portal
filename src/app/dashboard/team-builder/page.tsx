@@ -296,7 +296,7 @@ export default function TeamBuilderPage() {
         .from('profiles')
         .select('mbti_type')
         .eq('id', user.id)
-        .single()
+        .single<{ mbti_type: string | null }>()
 
       if (profileData?.mbti_type) {
         setUserType(profileData.mbti_type as MBTIType)

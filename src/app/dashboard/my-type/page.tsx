@@ -58,7 +58,7 @@ export default function MyTypePage() {
         .from('profiles')
         .select('mbti_type')
         .eq('id', user.id)
-        .single()
+        .single<{ mbti_type: string | null }>()
 
       if (profileData?.mbti_type) {
         const type = profileData.mbti_type as MBTIType
@@ -129,7 +129,7 @@ export default function MyTypePage() {
       <Card className="bg-gradient-to-r from-primary/10 via-primary/5 to-background">
         <CardContent className="pt-6">
           <div className="flex flex-col md:flex-row gap-6 items-start md:items-center">
-            <TypeBadge type={mbtiType} size="xl" />
+            <TypeBadge type={mbtiType} size="lg" />
             <div className="flex-1">
               <div className="flex items-center gap-3 mb-2">
                 <h1 className="text-3xl font-bold">{mbtiType}</h1>
