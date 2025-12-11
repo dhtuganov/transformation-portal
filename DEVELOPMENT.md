@@ -1,0 +1,1 @@
+/Users/david/Library/CloudStorage/GoogleDrive-david@creata.team/Shared drives/!Obsidian now/5 Otrar Travel/Development.md
