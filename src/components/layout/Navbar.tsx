@@ -1,11 +1,12 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { useRouter, usePathname } from 'next/navigation'
 import { useAuth } from '@/hooks/useAuth'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { Skeleton } from '@/components/ui/skeleton'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -28,9 +29,16 @@ import { cn } from '@/lib/utils'
 export function Navbar() {
   const [mounted, setMounted] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
-  const { user, profile, signOut } = useAuth()
+  const { user, profile, loading, signOut } = useAuth()
   const router = useRouter()
   const pathname = usePathname()
+
+  // Preserve role state to prevent menu flickering
+  const lastKnownRole = useRef<string | null>(null)
+  if (profile?.role) {
+    lastKnownRole.current = profile.role
+  }
+  const effectiveRole = profile?.role || lastKnownRole.current
 
   useEffect(() => {
     setMounted(true)
@@ -86,9 +94,13 @@ export function Navbar() {
     { href: '/dashboard/strategy', label: 'Стратегия', icon: TrendingUp },
   ]
 
-  const isManager = profile?.role && ['manager', 'executive', 'admin'].includes(profile.role)
-  const isExecutive = profile?.role && ['executive', 'admin'].includes(profile.role)
-  const isAdmin = profile?.role === 'admin'
+  // Use effectiveRole to prevent menu flickering during loading
+  const isManager = effectiveRole && ['manager', 'executive', 'admin'].includes(effectiveRole)
+  const isExecutive = effectiveRole && ['executive', 'admin'].includes(effectiveRole)
+  const isAdmin = effectiveRole === 'admin'
+
+  // Show loading skeleton for role-based nav items during initial load
+  const showRoleNavLoading = loading && !lastKnownRole.current
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -237,7 +249,13 @@ export function Navbar() {
                 {item.label}
               </Link>
             ))}
-            {isManager && managerItems.map((item) => (
+            {showRoleNavLoading && (
+              <>
+                <Skeleton className="h-8 w-20 rounded-md" />
+                <Skeleton className="h-8 w-20 rounded-md" />
+              </>
+            )}
+            {!showRoleNavLoading && isManager && managerItems.map((item) => (
               <Link
                 key={item.href}
                 href={item.href}
@@ -251,7 +269,7 @@ export function Navbar() {
                 {item.label}
               </Link>
             ))}
-            {isExecutive && executiveItems.map((item) => (
+            {!showRoleNavLoading && isExecutive && executiveItems.map((item) => (
               <Link
                 key={item.href}
                 href={item.href}
@@ -265,7 +283,7 @@ export function Navbar() {
                 {item.label}
               </Link>
             ))}
-            {isAdmin && (
+            {!showRoleNavLoading && isAdmin && (
               <Link
                 href="/admin"
                 className={cn(

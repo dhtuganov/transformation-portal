@@ -1,8 +1,8 @@
 'use client'
 
 import { useAuth } from '@/hooks/useAuth'
-import { redirect } from 'next/navigation'
-import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { useEffect, useState, useRef } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { cn } from '@/lib/utils'
@@ -16,7 +16,6 @@ import {
   BarChart3,
   ChevronLeft
 } from 'lucide-react'
-import { Button } from '@/components/ui/button'
 
 const strategyNav = [
   { href: '/dashboard/strategy', label: 'Обзор', icon: LayoutDashboard, exact: true },
@@ -34,18 +33,21 @@ export default function StrategyLayout({
   children: React.ReactNode
 }) {
   const { profile, loading } = useAuth()
+  const router = useRouter()
   const pathname = usePathname()
   const [authorized, setAuthorized] = useState(false)
+  const redirected = useRef(false)
 
   useEffect(() => {
-    if (!loading) {
+    if (!loading && !redirected.current) {
       if (!profile?.role || !['executive', 'admin'].includes(profile.role)) {
-        redirect('/dashboard')
+        redirected.current = true
+        router.push('/dashboard')
       } else {
         setAuthorized(true)
       }
     }
-  }, [profile, loading])
+  }, [profile, loading, router])
 
   const isActive = (href: string, exact?: boolean) => {
     if (exact) return pathname === href

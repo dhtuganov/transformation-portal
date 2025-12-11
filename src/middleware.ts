@@ -55,6 +55,23 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(url)
   }
 
+  // Fetch profile once for role-based routes (admin and strategy)
+  const needsRoleCheck =
+    request.nextUrl.pathname.startsWith('/admin') ||
+    request.nextUrl.pathname.startsWith('/dashboard/strategy')
+
+  let userRole: string | null = null
+
+  if (user && needsRoleCheck) {
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single() as { data: { role: string } | null }
+
+    userRole = profile?.role || null
+  }
+
   // Protected admin routes - redirect to dashboard if not admin
   if (request.nextUrl.pathname.startsWith('/admin')) {
     if (!user) {
@@ -63,14 +80,7 @@ export async function middleware(request: NextRequest) {
       return NextResponse.redirect(url)
     }
 
-    // Check if user is admin
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single() as { data: { role: string } | null }
-
-    if (!profile || profile.role !== 'admin') {
+    if (userRole !== 'admin') {
       const url = request.nextUrl.clone()
       url.pathname = '/dashboard'
       return NextResponse.redirect(url)
@@ -85,14 +95,7 @@ export async function middleware(request: NextRequest) {
       return NextResponse.redirect(url)
     }
 
-    // Check if user is executive or admin
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single() as { data: { role: string } | null }
-
-    if (!profile || !['executive', 'admin'].includes(profile.role)) {
+    if (!userRole || !['executive', 'admin'].includes(userRole)) {
       const url = request.nextUrl.clone()
       url.pathname = '/dashboard'
       return NextResponse.redirect(url)
