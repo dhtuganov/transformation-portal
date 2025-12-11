@@ -190,7 +190,7 @@ export function AchievementsPageClient({
                 </Link>
               </Button>
               <Button variant="outline" className="w-full justify-start" asChild>
-                <Link href="/dashboard/quiz">
+                <Link href="/dashboard/quizzes">
                   🎯 Пройти тест (+50 XP)
                 </Link>
               </Button>

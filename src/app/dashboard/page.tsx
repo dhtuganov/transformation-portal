@@ -250,7 +250,7 @@ export default async function DashboardPage() {
               </Link>
             </Button>
             <Button variant="outline" asChild className="h-auto py-4 flex-col gap-2">
-              <Link href="/dashboard/cognitive">
+              <Link href="/dashboard/profile/cognitive">
                 <Brain className="h-6 w-6 text-pink-500" />
                 <span className="text-sm">Функции</span>
               </Link>
