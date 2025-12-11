@@ -18,7 +18,7 @@ VALUES
   (gen_random_uuid(), 'albina@otrar.kz', 'Альбина Сарсенбаева', 'executive', 'Руководство', 'Офис-менеджер / Координатор трансформации', 'ISFJ', true),
 
   -- Admin/Consultant (David)
-  (gen_random_uuid(), 'david@creata.team', 'Давид Туганов', 'admin', 'Консалтинг', 'Трансформационный консультант', 'INTJ', true)
+  (gen_random_uuid(), 'david@creata.team', 'Давид Туганов', 'admin', 'Консалтинг', 'Трансформационный консультант', 'ENFP', true)
 
 ON CONFLICT (email) DO UPDATE SET
   full_name = EXCLUDED.full_name,
