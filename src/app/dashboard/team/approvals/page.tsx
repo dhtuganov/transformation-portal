@@ -73,7 +73,7 @@ export default function ApprovalsPage() {
 
       if (profile.role === 'admin' || profile.role === 'executive') {
         // Admins/executives see all users
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         const { data: allProfiles } = await (supabase
           .from('profiles') as any)
           .select('id');
@@ -81,7 +81,7 @@ export default function ApprovalsPage() {
         teamMemberIds = allProfiles?.map((p: { id: string }) => p.id) || [];
       } else {
         // Managers see their team members
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         const { data: teams } = await (supabase
           .from('teams') as any)
           .select('id')
@@ -90,7 +90,7 @@ export default function ApprovalsPage() {
         if (teams && teams.length > 0) {
           const teamIds = teams.map((t: { id: string }) => t.id);
 
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+           
           const { data: members } = await (supabase
             .from('team_members') as any)
             .select('user_id')
@@ -106,7 +106,7 @@ export default function ApprovalsPage() {
       }
 
       // Fetch development plans for team members
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       const { data: plansData, error: plansError } = await (supabase
         .from('development_plans') as any)
         .select(`
@@ -128,7 +128,7 @@ export default function ApprovalsPage() {
       const plansWithGoals: PlanWithEmployee[] = [];
 
       for (const plan of plansData || []) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         const { data: goals } = await (supabase
           .from('development_goals') as any)
           .select('id')

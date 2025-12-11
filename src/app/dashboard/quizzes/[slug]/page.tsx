@@ -37,7 +37,7 @@ export default function QuizPage({ params }: QuizPageProps) {
         }
 
         // Fetch quiz
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         const { data: quizData, error: quizError } = await (supabase
           .from('quizzes') as any)
           .select('*')
@@ -51,7 +51,7 @@ export default function QuizPage({ params }: QuizPageProps) {
         }
 
         // Fetch questions
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         const { data: questions, error: questionsError } = await (supabase
           .from('quiz_questions') as any)
           .select('*')
@@ -83,7 +83,7 @@ export default function QuizPage({ params }: QuizPageProps) {
       if (!user || !quiz) return;
 
       // Save attempt
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       const { error: attemptError } = await (supabase
         .from('quiz_attempts') as any)
         .insert({
@@ -103,7 +103,7 @@ export default function QuizPage({ params }: QuizPageProps) {
 
       // Update profile with MBTI type if it's an MBTI quiz
       if ('type' in result) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         const { error: profileError } = await (supabase
           .from('profiles') as any)
           .update({

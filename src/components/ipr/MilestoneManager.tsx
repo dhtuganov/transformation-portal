@@ -34,7 +34,7 @@ export function MilestoneManager({ goalId }: MilestoneManagerProps) {
 
   async function fetchMilestones() {
     try {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       const { data, error } = await (supabase
         .from('goal_milestones') as any)
         .select('*')
@@ -60,7 +60,7 @@ export function MilestoneManager({ goalId }: MilestoneManagerProps) {
 
     setSaving(true);
     try {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       const { data, error } = await (supabase
         .from('goal_milestones') as any)
         .insert({
@@ -95,7 +95,7 @@ export function MilestoneManager({ goalId }: MilestoneManagerProps) {
     const completedAt = newStatus === 'completed' ? new Date().toISOString() : null;
 
     try {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       const { error } = await (supabase
         .from('goal_milestones') as any)
         .update({
@@ -124,7 +124,7 @@ export function MilestoneManager({ goalId }: MilestoneManagerProps) {
     if (!confirm('Удалить этот этап?')) return;
 
     try {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       const { error } = await (supabase
         .from('goal_milestones') as any)
         .delete()

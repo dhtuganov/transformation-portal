@@ -71,7 +71,7 @@ export function ApprovalDialog({
         updateData.status = 'active';
       }
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       const { error: updateError } = await (supabase
         .from('development_plans') as any)
         .update(updateData)
@@ -82,7 +82,7 @@ export function ApprovalDialog({
       // Add a comment if provided
       if (comment.trim()) {
         // Get the first goal to attach comment (or we could create a plan-level comment system)
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         const { data: goals } = await (supabase
           .from('development_goals') as any)
           .select('id')
@@ -90,7 +90,7 @@ export function ApprovalDialog({
           .limit(1);
 
         if (goals && goals.length > 0) {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+           
           await (supabase
             .from('goal_comments') as any)
             .insert({

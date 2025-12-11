@@ -41,7 +41,7 @@ export async function POST(request: Request) {
     }
 
     // Update quiz published status
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data, error } = await (supabase
       .from('quizzes') as any)
       .update({

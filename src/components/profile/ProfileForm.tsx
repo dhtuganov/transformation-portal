@@ -70,7 +70,7 @@ export function ProfileForm({ profile, userId }: ProfileFormProps) {
         updated_at: new Date().toISOString(),
       }
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       const { error } = await (supabase
         .from('profiles') as any)
         .update(updateData)

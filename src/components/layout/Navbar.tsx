@@ -35,9 +35,14 @@ export function Navbar() {
 
   // Preserve role state to prevent menu flickering
   const lastKnownRole = useRef<string | null>(null)
-  if (profile?.role) {
-    lastKnownRole.current = profile.role
-  }
+
+  // Update ref in useEffect to avoid mutation during render
+  useEffect(() => {
+    if (profile?.role) {
+      lastKnownRole.current = profile.role
+    }
+  }, [profile?.role])
+
   const effectiveRole = profile?.role || lastKnownRole.current
 
   useEffect(() => {

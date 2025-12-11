@@ -77,7 +77,7 @@ export interface ContentView {
 export async function searchContent(filters: SearchFilters): Promise<ContentMetadata[]> {
   const supabase = await createClient()
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const { data, error } = await (supabase.rpc as any)('search_content', {
     search_query: filters.query || null,
     filter_category: filters.category || null,

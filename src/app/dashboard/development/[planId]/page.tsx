@@ -59,7 +59,7 @@ export default function PlanPage({ params }: PlanPageProps) {
       }
 
       // Fetch plan
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       const { data: planData, error: planError } = await (supabase
         .from('development_plans') as any)
         .select('*')
@@ -70,7 +70,7 @@ export default function PlanPage({ params }: PlanPageProps) {
       setPlan(planData);
 
       // Fetch goals
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       const { data: goalsData } = await (supabase
         .from('development_goals') as any)
         .select('*')
@@ -82,7 +82,7 @@ export default function PlanPage({ params }: PlanPageProps) {
       // Fetch milestones for all goals
       if (goalsData && goalsData.length > 0) {
         const goalIds = goalsData.map(g => g.id);
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         const { data: milestonesData } = await (supabase
           .from('goal_milestones') as any)
           .select('*')
@@ -125,7 +125,7 @@ export default function PlanPage({ params }: PlanPageProps) {
     due_date: string | null;
     mbti_dimension: string | null;
   }) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data, error } = await (supabase
       .from('development_goals') as any)
       .insert(goalData)
@@ -148,7 +148,7 @@ export default function PlanPage({ params }: PlanPageProps) {
     if (!plan) return;
 
     try {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       const { error } = await (supabase
         .from('development_plans') as any)
         .update({ status: newStatus })

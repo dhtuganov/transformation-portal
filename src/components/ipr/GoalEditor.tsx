@@ -80,7 +80,7 @@ export function GoalEditor({
 
     setLoading(true);
     try {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       const { data, error } = await (supabase
         .from('development_goals') as any)
         .update({
@@ -118,7 +118,7 @@ export function GoalEditor({
 
     setLoading(true);
     try {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       const { error } = await (supabase
         .from('development_goals') as any)
         .delete()

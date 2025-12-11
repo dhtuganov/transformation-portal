@@ -51,7 +51,7 @@ export default function DevelopmentPage() {
       }
 
       // Fetch plans
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       const { data: plansData, error: plansError } = await (supabase
         .from('development_plans') as any)
         .select('*')
@@ -63,7 +63,7 @@ export default function DevelopmentPage() {
       // Fetch goals for each plan
       const plansWithGoals: PlanWithGoals[] = [];
       for (const plan of (plansData || [])) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         const { data: goalsData } = await (supabase
           .from('development_goals') as any)
           .select('*')
@@ -92,7 +92,7 @@ export default function DevelopmentPage() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       const { data, error } = await (supabase
         .from('development_plans') as any)
         .insert({

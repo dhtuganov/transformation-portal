@@ -35,7 +35,7 @@ export async function awardXP(
 
   try {
     // 1. Get or create user gamification record
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     let { data: gamification, error: fetchError } = await (supabase
       .from('user_gamification') as any)
       .select('*')
@@ -44,7 +44,7 @@ export async function awardXP(
 
     if (fetchError && fetchError.code === 'PGRST116') {
       // Record doesn't exist, create it
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       const { data: newRecord, error: createError } = await (supabase
         .from('user_gamification') as any)
         .insert({ user_id: userId })
@@ -110,7 +110,7 @@ export async function awardXP(
       statsUpdate.total_challenges_completed = gamification.total_challenges_completed + 1
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { error: updateError } = await (supabase
       .from('user_gamification') as any)
       .update(statsUpdate)
@@ -175,7 +175,7 @@ export async function updateStreak(userId: string): Promise<UpdateStreakResult> 
   const supabase = await createClient()
 
   try {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data: gamification, error: fetchError } = await (supabase
       .from('user_gamification') as any)
       .select('current_streak, longest_streak, last_activity_date')
@@ -233,7 +233,7 @@ export async function updateStreak(userId: string): Promise<UpdateStreakResult> 
     }
 
     // Update streak in database
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { error: updateError } = await (supabase
       .from('user_gamification') as any)
       .update({

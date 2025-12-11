@@ -51,7 +51,7 @@ export async function POST(request: Request) {
     }
 
     // Update user role
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data, error } = await (supabase
       .from('profiles') as any)
       .update({ role, updated_at: new Date().toISOString() })
