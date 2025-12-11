@@ -7,8 +7,10 @@ import { Quiz } from '@/components/quiz/Quiz';
 import { QuizWithQuestions, MBTIResult } from '@/types/quiz';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { ArrowLeft, Star } from 'lucide-react';
 import Link from 'next/link';
+import { awardQuizXP, updateStreak } from '@/lib/gamification/actions';
 
 interface QuizPageProps {
   params: Promise<{ slug: string }>;
@@ -21,6 +23,8 @@ export default function QuizPage({ params }: QuizPageProps) {
   const [quiz, setQuiz] = useState<QuizWithQuestions | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [showXPNotification, setShowXPNotification] = useState(false);
+  const [xpAmount, setXpAmount] = useState(0);
 
   useEffect(() => {
     async function fetchQuiz() {
@@ -112,6 +116,23 @@ export default function QuizPage({ params }: QuizPageProps) {
           console.error('Error updating profile:', profileError);
         }
       }
+
+      // Award XP for completing the quiz
+      const score = 'score' in result ? Math.round((result.score / result.total) * 100) : 100;
+      const xpResult = await awardQuizXP(user.id, quiz.id, score, quiz.title);
+
+      if (xpResult.success) {
+        setXpAmount(xpResult.xpAwarded);
+        setShowXPNotification(true);
+
+        // Update streak
+        await updateStreak(user.id);
+
+        // Hide notification after 5 seconds
+        setTimeout(() => {
+          setShowXPNotification(false);
+        }, 5000);
+      }
     } catch (err) {
       console.error('Error completing quiz:', err);
     }
@@ -152,6 +173,19 @@ export default function QuizPage({ params }: QuizPageProps) {
       </div>
 
       <Quiz quiz={quiz} onComplete={handleComplete} />
+
+      {/* XP Award Notification */}
+      {showXPNotification && (
+        <div className="fixed top-4 right-4 z-50 animate-in slide-in-from-right-5 fade-in duration-300">
+          <Badge
+            variant="secondary"
+            className="bg-yellow-100 text-yellow-800 border-yellow-300 px-4 py-2 text-sm font-medium flex items-center gap-2 shadow-lg"
+          >
+            <Star className="h-4 w-4 fill-yellow-500 text-yellow-500" />
+            +{xpAmount} XP
+          </Badge>
+        </div>
+      )}
     </div>
   );
 }

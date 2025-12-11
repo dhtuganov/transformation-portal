@@ -136,7 +136,7 @@ export default async function ArticlePage({ params }: PageProps) {
   return (
     <div className="relative">
       {/* Reading Progress Bar */}
-      <ReadingProgress contentSlug={slugPath} userId={userId} />
+      <ReadingProgress contentSlug={slugPath} userId={userId} contentTitle={content.title} />
 
       <div className="max-w-7xl mx-auto px-4 py-6">
         {/* Back Button */}
