@@ -84,10 +84,6 @@ export default function ProgramPage() {
   const [moodAfter, setMoodAfter] = useState<number>(3)
   const [saving, setSaving] = useState(false)
 
-  useEffect(() => {
-    loadData()
-  }, [slug])
-
   const loadData = async () => {
     const supabase = createClient()
 
@@ -158,6 +154,11 @@ export default function ProgramPage() {
 
     setLoading(false)
   }
+
+  useEffect(() => {
+    loadData()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [slug])
 
   const getExerciseProgress = (exerciseId: string): ShadowWorkProgress | undefined => {
     return data?.progress.find(p => p.exercise_id === exerciseId)

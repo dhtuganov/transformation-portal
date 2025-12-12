@@ -398,10 +398,6 @@ export default function TypeSimulatorPage() {
   const [selectedScenario, setSelectedScenario] = useState<string>('brainstorm')
   const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
-    loadUserType()
-  }, [])
-
   const loadUserType = async () => {
     const supabase = createClient()
     const { data: { user } } = await supabase.auth.getUser()
@@ -419,6 +415,11 @@ export default function TypeSimulatorPage() {
     }
     setLoading(false)
   }
+
+  useEffect(() => {
+    loadUserType()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const currentScenario = SCENARIOS.find(s => s.id === selectedScenario)!
   const currentReactions = TYPE_REACTIONS[selectedScenario]

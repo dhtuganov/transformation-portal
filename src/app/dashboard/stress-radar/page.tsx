@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState, useCallback } from 'react'
+import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -74,10 +75,6 @@ export default function StressRadarPage() {
   const [notes, setNotes] = useState('')
   const [inferiorActive, setInferiorActive] = useState(false)
 
-  useEffect(() => {
-    loadData()
-  }, [])
-
   const loadData = async () => {
     const supabase = createClient()
 
@@ -109,6 +106,11 @@ export default function StressRadarPage() {
     setCheckIns(checkInsData || [])
     setLoading(false)
   }
+
+  useEffect(() => {
+    loadData()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const saveCheckIn = async () => {
     setSaving(true)
@@ -498,10 +500,10 @@ export default function StressRadarPage() {
                   className="mt-3 border-amber-300 text-amber-700 hover:bg-amber-100"
                   asChild
                 >
-                  <a href="/dashboard/shadow-work">
+                  <Link href="/dashboard/shadow-work">
                     <Brain className="mr-2 h-4 w-4" />
                     Начать Shadow Work
-                  </a>
+                  </Link>
                 </Button>
               </div>
             </div>

@@ -623,7 +623,7 @@ export default function RelationshipsPage() {
                     </h4>
                     <ul className="text-sm space-y-1">
                       {guide.phrases.map((phrase, i) => (
-                        <li key={i} className="text-muted-foreground italic">"{phrase}"</li>
+                        <li key={i} className="text-muted-foreground italic">&ldquo;{phrase}&rdquo;</li>
                       ))}
                     </ul>
                   </div>
