@@ -22,7 +22,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from '@/components/ui/sheet'
-import { User, LogOut, Settings, Menu, Home, BookOpen, ClipboardCheck, Target, Sparkles, Users, LayoutDashboard, Shield, TrendingUp, Brain } from 'lucide-react'
+import { User, LogOut, Settings, Menu, Home, BookOpen, ClipboardCheck, Target, Sparkles, Users, LayoutDashboard, Shield, TrendingUp, Brain, HelpCircle } from 'lucide-react'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
 
@@ -87,6 +87,7 @@ export function Navbar() {
     { href: '/dashboard/quizzes', label: 'Тесты', icon: ClipboardCheck },
     { href: '/dashboard/development', label: 'ИПР', icon: Target },
     { href: '/dashboard/test-insights', label: 'AI Инсайты', icon: Sparkles },
+    { href: '/dashboard/guide', label: 'Гайд', icon: HelpCircle },
     { href: '/dashboard/profile', label: 'Профиль', icon: User },
   ]
 

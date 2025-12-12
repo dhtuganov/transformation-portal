@@ -109,11 +109,15 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(url)
   }
 
-  // Redirect root to dashboard if authenticated, otherwise to login
+  // Root page (/) - show landing page for guests, redirect to dashboard for authenticated users
   if (request.nextUrl.pathname === '/') {
-    const url = request.nextUrl.clone()
-    url.pathname = user ? '/dashboard' : '/login'
-    return NextResponse.redirect(url)
+    if (user) {
+      const url = request.nextUrl.clone()
+      url.pathname = '/dashboard'
+      return NextResponse.redirect(url)
+    }
+    // Allow guests to see landing page
+    return supabaseResponse
   }
 
   return supabaseResponse
