@@ -14,7 +14,6 @@ import {
   Moon,
   ArrowLeft,
   CheckCircle2,
-  Circle,
   Clock,
   Target,
   Play,
@@ -94,11 +93,11 @@ export default function ProgramPage() {
     }
 
     // Get program
-    const { data: program } = await (supabase
-      .from('shadow_work_programs') as any)
+    const { data: program } = await supabase
+      .from('shadow_work_programs')
       .select('*')
       .eq('slug', slug)
-      .single()
+      .single() as { data: ShadowWorkProgram | null }
 
     if (!program) {
       router.push('/dashboard/shadow-work')
@@ -106,30 +105,30 @@ export default function ProgramPage() {
     }
 
     // Get weeks with exercises
-    const { data: weeks } = await (supabase
-      .from('shadow_work_weeks') as any)
+    const { data: weeks } = await supabase
+      .from('shadow_work_weeks')
       .select(`
         *,
         exercises:shadow_work_exercises(*)
       `)
       .eq('program_id', program.id)
-      .order('week_number')
+      .order('week_number') as { data: WeekWithExercises[] | null }
 
     // Get enrollment
-    const { data: enrollment } = await (supabase
-      .from('shadow_work_enrollments') as any)
+    const { data: enrollment } = await supabase
+      .from('shadow_work_enrollments')
       .select('*')
       .eq('user_id', user.id)
       .eq('program_id', program.id)
-      .single()
+      .single() as { data: ShadowWorkEnrollment | null }
 
     // Get progress
     let progress: ShadowWorkProgress[] = []
     if (enrollment) {
-      const { data: progressData } = await (supabase
-        .from('shadow_work_progress') as any)
+      const { data: progressData } = await supabase
+        .from('shadow_work_progress')
         .select('*')
-        .eq('enrollment_id', enrollment.id)
+        .eq('enrollment_id', enrollment.id) as { data: ShadowWorkProgress[] | null }
 
       progress = progressData || []
     }
@@ -204,19 +203,19 @@ export default function ProgramPage() {
 
     if (existing) {
       await (supabase
-        .from('shadow_work_progress') as any)
+        .from('shadow_work_progress') as ReturnType<typeof supabase.from>)
         .update(progressData)
         .eq('id', existing.id)
     } else {
       await (supabase
-        .from('shadow_work_progress') as any)
+        .from('shadow_work_progress') as ReturnType<typeof supabase.from>)
         .insert(progressData)
     }
 
     // Update enrollment XP if completed
     if (complete && !existing?.completed_at) {
       await (supabase
-        .from('shadow_work_enrollments') as any)
+        .from('shadow_work_enrollments') as ReturnType<typeof supabase.from>)
         .update({
           total_xp_earned: (data.enrollment.total_xp_earned || 0) + activeExercise.xp_reward
         })

@@ -72,7 +72,7 @@ export default function ShadowWorkPage() {
         .from('profiles')
         .select('mbti_type')
         .eq('id', user.id)
-        .single() as { data: { mbti_type: string | null } | null; error: any }
+        .single() as { data: { mbti_type: string | null } | null; error: Error | null }
 
       if (profileError) {
         console.error('[ShadowWork] Profile error:', profileError)
@@ -85,11 +85,11 @@ export default function ShadowWorkPage() {
 
       // Get programs
       console.log('[ShadowWork] Getting programs...')
-      const { data: programsData, error: programsError } = await (supabase
-        .from('shadow_work_programs') as any)
+      const { data: programsData, error: programsError } = await supabase
+        .from('shadow_work_programs')
         .select('*')
         .eq('is_active', true)
-        .order('target_function')
+        .order('target_function') as { data: ShadowWorkProgram[] | null; error: Error | null }
 
       if (programsError) {
         console.error('[ShadowWork] Programs error:', programsError)
@@ -98,10 +98,10 @@ export default function ShadowWorkPage() {
 
       // Get user enrollments
       console.log('[ShadowWork] Getting enrollments...')
-      const { data: enrollmentsData, error: enrollmentsError } = await (supabase
-        .from('shadow_work_enrollments') as any)
+      const { data: enrollmentsData, error: enrollmentsError } = await supabase
+        .from('shadow_work_enrollments')
         .select('*')
-        .eq('user_id', user.id)
+        .eq('user_id', user.id) as { data: ShadowWorkEnrollment[] | null; error: Error | null }
 
       if (enrollmentsError) {
         console.error('[ShadowWork] Enrollments error:', enrollmentsError)
@@ -132,7 +132,7 @@ export default function ShadowWorkPage() {
     if (!user) return
 
     const { error } = await (supabase
-      .from('shadow_work_enrollments') as any)
+      .from('shadow_work_enrollments') as ReturnType<typeof supabase.from>)
       .insert({
         user_id: user.id,
         program_id: programId,

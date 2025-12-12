@@ -41,9 +41,9 @@ export async function POST(request: Request) {
     }
 
     // Update quiz published status
-     
+
     const { data, error } = await (supabase
-      .from('quizzes') as any)
+      .from('quizzes') as ReturnType<typeof supabase.from>)
       .update({
         published,
         updated_at: new Date().toISOString(),

@@ -418,7 +418,7 @@ export default function TypeSimulatorPage() {
 
   useEffect(() => {
     loadUserType()
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+   
   }, [])
 
   const currentScenario = SCENARIOS.find(s => s.id === selectedScenario)!

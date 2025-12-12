@@ -12,50 +12,6 @@ import matter from 'gray-matter'
 
 const ARTICLES_DIR = path.join(process.cwd(), 'content', 'articles')
 
-// New category structure
-const CATEGORY_MAP = {
-  // Business / Professional Skills
-  'business': {
-    label: 'Бизнес навыки',
-    subcategories: [
-      'project-management',
-      'leadership',
-      'negotiation',
-      'team-management',
-      'knowledge-management',
-      'operations',
-      'sales',
-      'marketing',
-      'finance'
-    ]
-  },
-  // Personal Development
-  'personal': {
-    label: 'Личное развитие',
-    subcategories: [
-      'psychology',
-      'emotional-intelligence',
-      'communication',
-      'time-management',
-      'career-development',
-      'learning-skills',
-      'mbti',
-      'shadow-work'
-    ]
-  },
-  // Industry Knowledge
-  'industry': {
-    label: 'Отраслевые знания',
-    subcategories: [
-      'travel',
-      'mice',
-      'aviation',
-      'tourism',
-      'hospitality'
-    ]
-  }
-}
-
 // Patterns to remove
 const PATTERNS_TO_REMOVE = [
   // MindTools URLs and references
@@ -101,7 +57,7 @@ interface ContentFile {
  * - personal/ - личное развитие (psychology, mbti, time-management, career-development, communication)
  * - industry/ - отраслевые знания (travel/aviation, travel/mice, travel/tourism, travel/concierge)
  */
-function categorizeContent(filePath: string, frontmatter: Record<string, unknown>): { category: string; subcategory: string } {
+function categorizeContent(filePath: string): { category: string; subcategory: string } {
   const pathParts = filePath.split('/')
 
   // Find the position after 'articles' in path
@@ -274,7 +230,7 @@ function processFile(filePath: string): ContentFile | null {
     }
 
     // Update categories
-    const { category, subcategory } = categorizeContent(filePath, frontmatter)
+    const { category, subcategory } = categorizeContent(filePath)
     if (frontmatter.category !== category || frontmatter.subcategory !== subcategory) {
       needsUpdate = true
       issues.push(`Category update: ${frontmatter.category}/${frontmatter.subcategory} → ${category}/${subcategory}`)

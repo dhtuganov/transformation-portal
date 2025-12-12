@@ -3,10 +3,10 @@
 import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
-import { DevelopmentPlan, DevelopmentGoal, PLAN_STATUS_LABELS } from '@/types/ipr';
+import { DevelopmentPlan, DevelopmentGoal } from '@/types/ipr';
 import { PlanCard } from '@/components/ipr/PlanCard';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Plus, Target, Calendar, TrendingUp } from 'lucide-react';
@@ -51,9 +51,9 @@ export default function DevelopmentPage() {
       }
 
       // Fetch plans
-       
-      const { data: plansData, error: plansError } = await (supabase
-        .from('development_plans') as any)
+
+      const { data: plansData, error: plansError } = await supabase
+        .from('development_plans')
         .select('*')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false }) as { data: DevelopmentPlan[] | null; error: Error | null };
@@ -63,9 +63,9 @@ export default function DevelopmentPage() {
       // Fetch goals for each plan
       const plansWithGoals: PlanWithGoals[] = [];
       for (const plan of (plansData || [])) {
-         
-        const { data: goalsData } = await (supabase
-          .from('development_goals') as any)
+
+        const { data: goalsData } = await supabase
+          .from('development_goals')
           .select('*')
           .eq('plan_id', plan.id)
           .order('created_at') as { data: DevelopmentGoal[] | null };
@@ -92,9 +92,9 @@ export default function DevelopmentPage() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
-       
+
       const { data, error } = await (supabase
-        .from('development_plans') as any)
+        .from('development_plans') as ReturnType<typeof supabase.from>)
         .insert({
           user_id: user.id,
           title: newPlanTitle.trim(),

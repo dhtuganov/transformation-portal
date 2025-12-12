@@ -51,9 +51,9 @@ export async function POST(request: Request) {
     }
 
     // Update user role
-     
+
     const { data, error } = await (supabase
-      .from('profiles') as any)
+      .from('profiles') as ReturnType<typeof supabase.from>)
       .update({ role, updated_at: new Date().toISOString() })
       .eq('id', userId)
       .select()

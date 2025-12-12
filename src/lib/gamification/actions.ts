@@ -35,18 +35,20 @@ export async function awardXP(
 
   try {
     // 1. Get or create user gamification record
-     
-    let { data: gamification, error: fetchError } = await (supabase
-      .from('user_gamification') as any)
+
+    const { data: gamification, error: fetchError } = await supabase
+      .from('user_gamification')
       .select('*')
       .eq('user_id', userId)
       .single() as { data: DBGamificationRecord | null; error: { code?: string; message: string } | null }
 
+    let currentGamification = gamification
+
     if (fetchError && fetchError.code === 'PGRST116') {
       // Record doesn't exist, create it
-       
+
       const { data: newRecord, error: createError } = await (supabase
-        .from('user_gamification') as any)
+        .from('user_gamification') as ReturnType<typeof supabase.from>)
         .insert({ user_id: userId })
         .select()
         .single() as { data: DBGamificationRecord | null; error: { message: string } | null }
@@ -54,17 +56,17 @@ export async function awardXP(
       if (createError) {
         return { success: false, xpAwarded: 0, newTotalXp: 0, levelUp: false, error: createError.message }
       }
-      gamification = newRecord
+      currentGamification = newRecord
     } else if (fetchError) {
       return { success: false, xpAwarded: 0, newTotalXp: 0, levelUp: false, error: fetchError.message }
     }
 
-    if (!gamification) {
+    if (!currentGamification) {
       return { success: false, xpAwarded: 0, newTotalXp: 0, levelUp: false, error: 'Failed to get gamification record' }
     }
 
-    const oldLevel = gamification.level
-    const newTotalXp = gamification.total_xp + amount
+    const oldLevel = currentGamification.level
+    const newTotalXp = currentGamification.total_xp + amount
     const { level: newLevel, name: newLevelName } = getLevelForXp(newTotalXp)
     const levelUp = newLevel > oldLevel
 
@@ -74,13 +76,13 @@ export async function awardXP(
     const monthStart = getMonthStart()
 
     // Reset weekly/monthly XP if needed
-    let weeklyXp = gamification.weekly_xp + amount
-    let monthlyXp = gamification.monthly_xp + amount
+    let weeklyXp = currentGamification.weekly_xp + amount
+    let monthlyXp = currentGamification.monthly_xp + amount
 
-    if (gamification.week_start_date !== weekStart) {
+    if (currentGamification.week_start_date !== weekStart) {
       weeklyXp = amount // Reset weekly
     }
-    if (gamification.month_start_date !== monthStart) {
+    if (currentGamification.month_start_date !== monthStart) {
       monthlyXp = amount // Reset monthly
     }
 
@@ -99,20 +101,20 @@ export async function awardXP(
 
     // Increment specific counters
     if (source === 'article') {
-      statsUpdate.total_articles_read = gamification.total_articles_read + 1
+      statsUpdate.total_articles_read = currentGamification.total_articles_read + 1
     } else if (source === 'quiz') {
-      statsUpdate.total_quizzes_completed = gamification.total_quizzes_completed + 1
+      statsUpdate.total_quizzes_completed = currentGamification.total_quizzes_completed + 1
     } else if (source === 'exercise') {
-      statsUpdate.total_exercises_completed = gamification.total_exercises_completed + 1
+      statsUpdate.total_exercises_completed = currentGamification.total_exercises_completed + 1
     } else if (source === 'journal') {
-      statsUpdate.total_journal_entries = gamification.total_journal_entries + 1
+      statsUpdate.total_journal_entries = currentGamification.total_journal_entries + 1
     } else if (source === 'challenge') {
-      statsUpdate.total_challenges_completed = gamification.total_challenges_completed + 1
+      statsUpdate.total_challenges_completed = currentGamification.total_challenges_completed + 1
     }
 
-     
+
     const { error: updateError } = await (supabase
-      .from('user_gamification') as any)
+      .from('user_gamification') as ReturnType<typeof supabase.from>)
       .update(statsUpdate)
       .eq('user_id', userId)
 
@@ -121,8 +123,7 @@ export async function awardXP(
     }
 
     // 3. Log the XP transaction
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    await (supabase.from('xp_transactions') as any).insert({
+    await (supabase.from('xp_transactions') as ReturnType<typeof supabase.from>).insert({
       user_id: userId,
       amount,
       source,
@@ -175,9 +176,9 @@ export async function updateStreak(userId: string): Promise<UpdateStreakResult> 
   const supabase = await createClient()
 
   try {
-     
-    const { data: gamification, error: fetchError } = await (supabase
-      .from('user_gamification') as any)
+
+    const { data: gamification, error: fetchError } = await supabase
+      .from('user_gamification')
       .select('current_streak, longest_streak, last_activity_date')
       .eq('user_id', userId)
       .single() as { data: Pick<DBGamificationRecord, 'current_streak' | 'longest_streak' | 'last_activity_date'> | null; error: { message: string } | null }
@@ -233,9 +234,9 @@ export async function updateStreak(userId: string): Promise<UpdateStreakResult> 
     }
 
     // Update streak in database
-     
+
     const { error: updateError } = await (supabase
-      .from('user_gamification') as any)
+      .from('user_gamification') as ReturnType<typeof supabase.from>)
       .update({
         current_streak: currentStreak,
         longest_streak: longestStreak,

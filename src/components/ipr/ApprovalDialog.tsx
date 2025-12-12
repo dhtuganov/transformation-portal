@@ -73,7 +73,7 @@ export function ApprovalDialog({
 
        
       const { error: updateError } = await (supabase
-        .from('development_plans') as any)
+        .from('development_plans') as ReturnType<typeof supabase.from>)
         .update(updateData)
         .eq('id', planId);
 
@@ -83,16 +83,16 @@ export function ApprovalDialog({
       if (comment.trim()) {
         // Get the first goal to attach comment (or we could create a plan-level comment system)
          
-        const { data: goals } = await (supabase
-          .from('development_goals') as any)
+        const { data: goals } = await supabase
+          .from('development_goals')
           .select('id')
           .eq('plan_id', planId)
-          .limit(1);
+          .limit(1) as { data: Array<{ id: string }> | null };
 
         if (goals && goals.length > 0) {
-           
+
           await (supabase
-            .from('goal_comments') as any)
+            .from('goal_comments') as ReturnType<typeof supabase.from>)
             .insert({
               goal_id: goals[0].id,
               author_id: user.id,

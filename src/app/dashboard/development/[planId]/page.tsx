@@ -59,9 +59,9 @@ export default function PlanPage({ params }: PlanPageProps) {
       }
 
       // Fetch plan
-       
-      const { data: planData, error: planError } = await (supabase
-        .from('development_plans') as any)
+
+      const { data: planData, error: planError } = await supabase
+        .from('development_plans')
         .select('*')
         .eq('id', planId)
         .single() as { data: DevelopmentPlan | null; error: Error | null };
@@ -70,9 +70,9 @@ export default function PlanPage({ params }: PlanPageProps) {
       setPlan(planData);
 
       // Fetch goals
-       
-      const { data: goalsData } = await (supabase
-        .from('development_goals') as any)
+
+      const { data: goalsData } = await supabase
+        .from('development_goals')
         .select('*')
         .eq('plan_id', planId)
         .order('created_at') as { data: DevelopmentGoal[] | null };
@@ -82,9 +82,9 @@ export default function PlanPage({ params }: PlanPageProps) {
       // Fetch milestones for all goals
       if (goalsData && goalsData.length > 0) {
         const goalIds = goalsData.map(g => g.id);
-         
-        const { data: milestonesData } = await (supabase
-          .from('goal_milestones') as any)
+
+        const { data: milestonesData } = await supabase
+          .from('goal_milestones')
           .select('*')
           .in('goal_id', goalIds)
           .order('due_date') as { data: GoalMilestone[] | null };
@@ -125,9 +125,9 @@ export default function PlanPage({ params }: PlanPageProps) {
     due_date: string | null;
     mbti_dimension: string | null;
   }) {
-     
+
     const { data, error } = await (supabase
-      .from('development_goals') as any)
+      .from('development_goals') as ReturnType<typeof supabase.from>)
       .insert(goalData)
       .select()
       .single() as { data: DevelopmentGoal | null; error: Error | null };
@@ -148,9 +148,9 @@ export default function PlanPage({ params }: PlanPageProps) {
     if (!plan) return;
 
     try {
-       
+
       const { error } = await (supabase
-        .from('development_plans') as any)
+        .from('development_plans') as ReturnType<typeof supabase.from>)
         .update({ status: newStatus })
         .eq('id', plan.id);
 

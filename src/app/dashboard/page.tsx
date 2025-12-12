@@ -6,7 +6,9 @@ import { Button } from '@/components/ui/button'
 import { Progress } from '@/components/ui/progress'
 import { TypeBadge } from '@/components/mbti/TypeBadge'
 import { StatCard } from '@/components/dashboard/StatCard'
-import { BookOpen, User, Users, TrendingUp, Sparkles, ClipboardCheck, Target, Brain, Moon, Activity, Heart, Compass } from 'lucide-react'
+import { GamificationWidget } from '@/components/features/gamification/GamificationPanel'
+import { getUserGamification } from '@/lib/gamification/queries'
+import { BookOpen, User, Users, TrendingUp, Sparkles, ClipboardCheck, Target, Brain, Moon, Activity, Heart, Compass, Trophy } from 'lucide-react'
 import type { MBTIType } from '@/types/database'
 
 export const dynamic = 'force-dynamic'
@@ -36,6 +38,7 @@ export default async function DashboardPage() {
   let completedCount = 0
   let totalCount = 0
   let progressPercent = 0
+  let gamification = null
 
   if (!DEMO_MODE) {
     const supabase = await createClient()
@@ -77,6 +80,9 @@ export default async function DashboardPage() {
     completedCount = progress?.filter(p => p.status === 'completed').length || 0
     totalCount = progress?.length || 0
     progressPercent = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0
+
+    // Get gamification data
+    gamification = await getUserGamification(user.id)
   }
 
   return (
@@ -126,6 +132,32 @@ export default async function DashboardPage() {
           icon={TrendingUp}
         />
       </div>
+
+      {/* Gamification Widget */}
+      {gamification ? (
+        <GamificationWidget gamification={gamification} locale="ru" />
+      ) : (
+        <Card className="border-2 border-dashed">
+          <CardContent className="flex items-center justify-between p-6">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 rounded-full bg-amber-100 dark:bg-amber-900/20 flex items-center justify-center">
+                <Trophy className="h-6 w-6 text-amber-600" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-lg">Начните зарабатывать XP!</h3>
+                <p className="text-sm text-muted-foreground">
+                  Изучайте материалы, проходите тесты и получайте награды за ваш прогресс
+                </p>
+              </div>
+            </div>
+            <Button asChild>
+              <Link href="/dashboard/learning">
+                Начать
+              </Link>
+            </Button>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Main Content Grid */}
       <div className="grid gap-6 md:grid-cols-2">

@@ -486,6 +486,189 @@ export default async function TeamPage() {
               )
             })}
           </div>
+
+          {/* Skill Gap Analysis */}
+          {(() => {
+            // Cognitive functions mapping
+            const functionMapping: Record<string, { dominant: string; auxiliary: string }> = {
+              'INTJ': { dominant: 'Ni', auxiliary: 'Te' },
+              'ENTJ': { dominant: 'Te', auxiliary: 'Ni' },
+              'INTP': { dominant: 'Ti', auxiliary: 'Ne' },
+              'ENTP': { dominant: 'Ne', auxiliary: 'Ti' },
+              'INFJ': { dominant: 'Ni', auxiliary: 'Fe' },
+              'ENFJ': { dominant: 'Fe', auxiliary: 'Ni' },
+              'INFP': { dominant: 'Fi', auxiliary: 'Ne' },
+              'ENFP': { dominant: 'Ne', auxiliary: 'Fi' },
+              'ISTJ': { dominant: 'Si', auxiliary: 'Te' },
+              'ESTJ': { dominant: 'Te', auxiliary: 'Si' },
+              'ISTP': { dominant: 'Ti', auxiliary: 'Se' },
+              'ESTP': { dominant: 'Se', auxiliary: 'Ti' },
+              'ISFJ': { dominant: 'Si', auxiliary: 'Fe' },
+              'ESFJ': { dominant: 'Fe', auxiliary: 'Si' },
+              'ISFP': { dominant: 'Fi', auxiliary: 'Se' },
+              'ESFP': { dominant: 'Se', auxiliary: 'Fi' },
+            }
+
+            const allFunctions = ['Te', 'Ti', 'Fe', 'Fi', 'Ne', 'Ni', 'Se', 'Si']
+            const functionLabels: Record<string, { name: string; desc: string }> = {
+              'Te': { name: 'Логика действий', desc: 'Структура, эффективность, системы' },
+              'Ti': { name: 'Логика понятий', desc: 'Анализ, точность, модели' },
+              'Fe': { name: 'Эмоции группы', desc: 'Коммуникация, гармония, эмпатия' },
+              'Fi': { name: 'Эмоции личности', desc: 'Ценности, аутентичность, этика' },
+              'Ne': { name: 'Интуиция возможностей', desc: 'Идеи, связи, инновации' },
+              'Ni': { name: 'Интуиция предвидения', desc: 'Видение, стратегия, инсайты' },
+              'Se': { name: 'Сенсорика опыта', desc: 'Действие, адаптация, практика' },
+              'Si': { name: 'Сенсорика памяти', desc: 'Детали, традиции, стабильность' },
+            }
+
+            // Calculate function counts
+            const functionCounts: Record<string, number> = {}
+            allFunctions.forEach(f => functionCounts[f] = 0)
+
+            teamMembers.forEach(member => {
+              if (member.mbti_type && functionMapping[member.mbti_type]) {
+                const funcs = functionMapping[member.mbti_type]
+                functionCounts[funcs.dominant] = (functionCounts[funcs.dominant] || 0) + 2 // dominant counts double
+                functionCounts[funcs.auxiliary] = (functionCounts[funcs.auxiliary] || 0) + 1
+              }
+            })
+
+            const maxCount = Math.max(...Object.values(functionCounts), 1)
+            const sortedFunctions = allFunctions.sort((a, b) => functionCounts[b] - functionCounts[a])
+
+            const strongFunctions = sortedFunctions.filter(f => functionCounts[f] >= maxCount * 0.4)
+            const weakFunctions = sortedFunctions.filter(f => functionCounts[f] < maxCount * 0.2)
+
+            // Recommend types based on missing functions
+            const recommendTypes: Record<string, string[]> = {
+              'Te': ['ENTJ', 'ESTJ', 'INTJ', 'ISTJ'],
+              'Ti': ['INTP', 'ISTP', 'ENTP', 'ESTP'],
+              'Fe': ['ENFJ', 'ESFJ', 'INFJ', 'ISFJ'],
+              'Fi': ['INFP', 'ISFP', 'ENFP', 'ESFP'],
+              'Ne': ['ENTP', 'ENFP', 'INTP', 'INFP'],
+              'Ni': ['INTJ', 'INFJ', 'ENTJ', 'ENFJ'],
+              'Se': ['ESTP', 'ESFP', 'ISTP', 'ISFP'],
+              'Si': ['ISTJ', 'ISFJ', 'ESTJ', 'ESFJ'],
+            }
+
+            const recommendations = weakFunctions.flatMap(f => recommendTypes[f] || [])
+            const uniqueRecommendations = Array.from(new Set(recommendations))
+              .filter(type => !teamMembers.some(m => m.mbti_type === type))
+              .slice(0, 4)
+
+            return (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Brain className="w-5 h-5" />
+                    Анализ когнитивных функций
+                  </CardTitle>
+                  <CardDescription>
+                    Распределение функций MBTI и выявление пробелов в команде
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  {/* Function Distribution */}
+                  <div className="space-y-3">
+                    {sortedFunctions.map(func => {
+                      const count = functionCounts[func]
+                      const percentage = maxCount > 0 ? (count / maxCount) * 100 : 0
+                      const isStrong = count >= maxCount * 0.4
+                      const isWeak = count < maxCount * 0.2
+
+                      return (
+                        <div key={func} className="space-y-1">
+                          <div className="flex items-center justify-between text-sm">
+                            <div className="flex items-center gap-2">
+                              <span className="font-mono font-semibold w-6">{func}</span>
+                              <span className="text-muted-foreground">
+                                {functionLabels[func].name}
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <span className="text-muted-foreground text-xs">
+                                {functionLabels[func].desc}
+                              </span>
+                              <span className="font-medium w-8 text-right">{count}</span>
+                            </div>
+                          </div>
+                          <div className="relative h-2 bg-muted rounded-full overflow-hidden">
+                            <div
+                              className={`h-full transition-all ${
+                                isStrong ? 'bg-green-500' :
+                                isWeak ? 'bg-orange-400' :
+                                'bg-blue-500'
+                              }`}
+                              style={{ width: `${percentage}%` }}
+                            />
+                          </div>
+                        </div>
+                      )
+                    })}
+                  </div>
+
+                  {/* Summary */}
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <div className="p-4 rounded-lg bg-green-50 border border-green-200">
+                      <p className="font-semibold text-sm text-green-900 mb-2">
+                        Сильные стороны
+                      </p>
+                      <div className="flex flex-wrap gap-2">
+                        {strongFunctions.map(f => (
+                          <Badge key={f} variant="outline" className="bg-green-100 border-green-300">
+                            {f} - {functionLabels[f].name}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="p-4 rounded-lg bg-orange-50 border border-orange-200">
+                      <p className="font-semibold text-sm text-orange-900 mb-2">
+                        Пробелы в команде
+                      </p>
+                      <div className="flex flex-wrap gap-2">
+                        {weakFunctions.length > 0 ? (
+                          weakFunctions.map(f => (
+                            <Badge key={f} variant="outline" className="bg-orange-100 border-orange-300">
+                              {f} - {functionLabels[f].name}
+                            </Badge>
+                          ))
+                        ) : (
+                          <p className="text-sm text-muted-foreground">Все функции представлены</p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Recommendations */}
+                  {uniqueRecommendations.length > 0 && (
+                    <div className="p-4 rounded-lg bg-blue-50 border border-blue-200">
+                      <p className="font-semibold text-sm text-blue-900 mb-3">
+                        Рекомендации по найму
+                      </p>
+                      <p className="text-sm text-muted-foreground mb-2">
+                        Для усиления слабых функций рассмотрите кандидатов с типами:
+                      </p>
+                      <div className="flex flex-wrap gap-2">
+                        {uniqueRecommendations.map(type => (
+                          <TypeBadge key={type} type={type as MBTIType} size="sm" />
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {membersWithMBTI === 0 && (
+                    <div className="text-center py-6">
+                      <AlertCircle className="w-12 h-12 mx-auto text-muted-foreground mb-3" />
+                      <p className="text-sm text-muted-foreground">
+                        Анализ доступен после прохождения MBTI тестирования командой
+                      </p>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            )
+          })()}
         </TabsContent>
 
         <TabsContent value="members" className="space-y-6">

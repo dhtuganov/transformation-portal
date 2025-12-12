@@ -73,7 +73,7 @@ export default async function ArticlePage({ params }: PageProps) {
 
   // Authentication check
   let userId = MOCK_USER.id
-  let userName = 'Демо пользователь'
+  // let userName = 'Демо пользователь'
 
   if (!DEMO_MODE) {
     const supabase = await createClient()
@@ -93,7 +93,7 @@ export default async function ArticlePage({ params }: PageProps) {
       .maybeSingle() as { data: { full_name: string | null } | null }
 
     if (profile?.full_name) {
-      userName = profile.full_name
+      // userName = profile.full_name
     }
   }
 

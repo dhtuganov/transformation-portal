@@ -70,9 +70,10 @@ export function ProfileForm({ profile, userId }: ProfileFormProps) {
         updated_at: new Date().toISOString(),
       }
 
-       
+
+
       const { error } = await (supabase
-        .from('profiles') as any)
+        .from('profiles') as ReturnType<typeof supabase.from>)
         .update(updateData)
         .eq('id', userId)
 

@@ -109,7 +109,7 @@ export default function StressRadarPage() {
 
   useEffect(() => {
     loadData()
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+   
   }, [])
 
   const saveCheckIn = async () => {

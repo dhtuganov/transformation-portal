@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation';
 import { QuizCard } from '@/components/quiz/QuizCard';
 import { Quiz } from '@/types/quiz';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { ScenarioPracticeSection } from './scenario-section';
 
 export const metadata = {
   title: 'Тесты | Otrar Transformation Portal',
@@ -27,11 +28,21 @@ export default async function QuizzesPage() {
     .eq('published', true)
     .order('created_at', { ascending: false }) as { data: Quiz[] | null; error: unknown };
 
-  // Fetch user's attempts
-  const { data: attempts } = await supabase
-    .from('quiz_attempts')
-    .select('quiz_id, status, score, total_points')
-    .eq('user_id', user.id) as { data: { quiz_id: string; status: string; score: number | null; total_points: number | null }[] | null };
+  // Fetch user's attempts and profile in parallel
+  const [attemptsResult, profileResult] = await Promise.all([
+    supabase
+      .from('quiz_attempts')
+      .select('quiz_id, status, score, total_points')
+      .eq('user_id', user.id),
+    supabase
+      .from('profiles')
+      .select('mbti_type')
+      .eq('id', user.id)
+      .single()
+  ]);
+
+  const attempts = attemptsResult.data as { quiz_id: string; status: string; score: number | null; total_points: number | null }[] | null;
+  const userMbtiType = (profileResult.data as { mbti_type: string | null } | null)?.mbti_type || null;
 
   // Group quizzes by type
   const mbtiQuizzes = quizzes?.filter((q) => q.quiz_type === 'mbti') || [];
@@ -71,6 +82,9 @@ export default async function QuizzesPage() {
           </TabsTrigger>
           <TabsTrigger value="assessment">
             Оценка ({assessmentQuizzes.length})
+          </TabsTrigger>
+          <TabsTrigger value="scenarios">
+            Практикум
           </TabsTrigger>
         </TabsList>
 
@@ -138,6 +152,10 @@ export default async function QuizzesPage() {
               <p>Оценочные тесты скоро появятся</p>
             </div>
           )}
+        </TabsContent>
+
+        <TabsContent value="scenarios" className="space-y-4">
+          <ScenarioPracticeSection userMbtiType={userMbtiType} />
         </TabsContent>
       </Tabs>
 

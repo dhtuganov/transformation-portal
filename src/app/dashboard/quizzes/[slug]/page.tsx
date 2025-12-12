@@ -37,13 +37,13 @@ export default function QuizPage({ params }: QuizPageProps) {
         }
 
         // Fetch quiz
-         
-        const { data: quizData, error: quizError } = await (supabase
-          .from('quizzes') as any)
+
+        const { data: quizData, error: quizError } = await supabase
+          .from('quizzes')
           .select('*')
           .eq('slug', slug)
           .eq('published', true)
-          .single();
+          .single() as { data: { id: string; title: string; slug: string; published: boolean } | null; error: Error | null };
 
         if (quizError || !quizData) {
           setError('Тест не найден');
@@ -51,12 +51,12 @@ export default function QuizPage({ params }: QuizPageProps) {
         }
 
         // Fetch questions
-         
-        const { data: questions, error: questionsError } = await (supabase
-          .from('quiz_questions') as any)
+
+        const { data: questions, error: questionsError } = await supabase
+          .from('quiz_questions')
           .select('*')
           .eq('quiz_id', quizData.id)
-          .order('question_order');
+          .order('question_order') as { data: Array<{ id: string; quiz_id: string; question_order: number; question_text: string }> | null; error: Error | null };
 
         if (questionsError) {
           setError('Ошибка загрузки вопросов');
@@ -67,7 +67,7 @@ export default function QuizPage({ params }: QuizPageProps) {
           ...quizData,
           questions: questions || [],
         } as QuizWithQuestions);
-      } catch (err) {
+      } catch {
         setError('Произошла ошибка');
       } finally {
         setLoading(false);
@@ -83,9 +83,9 @@ export default function QuizPage({ params }: QuizPageProps) {
       if (!user || !quiz) return;
 
       // Save attempt
-       
+
       const { error: attemptError } = await (supabase
-        .from('quiz_attempts') as any)
+        .from('quiz_attempts') as ReturnType<typeof supabase.from>)
         .insert({
           user_id: user.id,
           quiz_id: quiz.id,
@@ -103,9 +103,9 @@ export default function QuizPage({ params }: QuizPageProps) {
 
       // Update profile with MBTI type if it's an MBTI quiz
       if ('type' in result) {
-         
+
         const { error: profileError } = await (supabase
-          .from('profiles') as any)
+          .from('profiles') as ReturnType<typeof supabase.from>)
           .update({
             mbti_type: result.type,
             mbti_verified: false,

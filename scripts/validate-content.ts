@@ -82,7 +82,7 @@ function getAllMdxFiles(dir: string): string[] {
   return files
 }
 
-function validateFrontmatter(filePath: string, data: Record<string, any>): ValidationError[] {
+function validateFrontmatter(filePath: string, data: Record<string, string | boolean | number | string[] | null | undefined>): ValidationError[] {
   const errors: ValidationError[] = []
   const relativePath = path.relative(CONTENT_DIR, filePath)
 
@@ -103,7 +103,7 @@ function validateFrontmatter(filePath: string, data: Record<string, any>): Valid
   }
 
   // Validate category
-  if (data.category && !VALID_CATEGORIES.includes(data.category)) {
+  if (data.category && typeof data.category === 'string' && !VALID_CATEGORIES.includes(data.category)) {
     errors.push({
       file: relativePath,
       field: 'category',
@@ -113,7 +113,7 @@ function validateFrontmatter(filePath: string, data: Record<string, any>): Valid
   }
 
   // Validate difficulty
-  if (data.difficulty && !VALID_DIFFICULTIES.includes(data.difficulty)) {
+  if (data.difficulty && typeof data.difficulty === 'string' && !VALID_DIFFICULTIES.includes(data.difficulty)) {
     errors.push({
       file: relativePath,
       field: 'difficulty',
@@ -161,7 +161,7 @@ function validateFrontmatter(filePath: string, data: Record<string, any>): Valid
   }
 
   // Validate date format
-  if (data.date) {
+  if (data.date && typeof data.date === 'string') {
     const dateRegex = /^\d{4}-\d{2}-\d{2}$/
     if (!dateRegex.test(data.date)) {
       errors.push({
@@ -174,7 +174,7 @@ function validateFrontmatter(filePath: string, data: Record<string, any>): Valid
   }
 
   // Check for empty description
-  if (data.description && data.description.length < 20) {
+  if (data.description && typeof data.description === 'string' && data.description.length < 20) {
     errors.push({
       file: relativePath,
       field: 'description',

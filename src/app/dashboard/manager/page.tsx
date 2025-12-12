@@ -9,13 +9,9 @@ import { Progress } from '@/components/ui/progress'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import {
   Users,
-  TrendingUp,
   Target,
   Brain,
-  BookOpen,
-  CheckCircle,
-  Clock,
-  BarChart3
+  CheckCircle
 } from 'lucide-react'
 
 interface TeamMember {
@@ -54,7 +50,6 @@ export default function ManagerDashboardPage() {
 
       // For admin, fetch all profiles
       // For manager, fetch team members only
-      const isAdmin = profile.role === 'admin' || profile.role === 'executive'
 
       const { data: profiles } = await supabase
         .from('profiles')
@@ -62,10 +57,10 @@ export default function ManagerDashboardPage() {
         .order('full_name')
 
       if (profiles) {
-        setTeamMembers(profiles as any[])
+        setTeamMembers(profiles as TeamMember[])
 
         // Calculate stats
-        const mbtiCount = profiles.filter((p: any) => p.mbti_type).length
+        const mbtiCount = profiles.filter((p: TeamMember) => p.mbti_type).length
 
         setStats({
           totalMembers: profiles.length,

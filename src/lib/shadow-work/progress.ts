@@ -62,10 +62,10 @@ export function initializeShadowWorkProfile(
   return {
     userId,
     mbtiType,
-    inferiorFunction: functions.inferior as any,
-    dominantFunction: functions.dominant as any,
-    auxiliaryFunction: functions.auxiliary as any,
-    tertiaryFunction: functions.tertiary as any,
+    inferiorFunction: functions.inferior as 'Ni' | 'Ne' | 'Si' | 'Se' | 'Ti' | 'Te' | 'Fi' | 'Fe',
+    dominantFunction: functions.dominant as 'Ni' | 'Ne' | 'Si' | 'Se' | 'Ti' | 'Te' | 'Fi' | 'Fe',
+    auxiliaryFunction: functions.auxiliary as 'Ni' | 'Ne' | 'Si' | 'Se' | 'Ti' | 'Te' | 'Fi' | 'Fe',
+    tertiaryFunction: functions.tertiary as 'Ni' | 'Ne' | 'Si' | 'Se' | 'Ti' | 'Te' | 'Fi' | 'Fe',
     integrationLevel: 0,
     commonTriggers: [],
     behaviorPatterns: [],
@@ -375,7 +375,7 @@ export function getExerciseRecommendations(
 
 // Generate recommendation reason
 function generateRecommendationReason(
-  exercise: any,
+  exercise: { difficulty?: string },
   profile: ShadowWorkProfile,
   score: number
 ): string {
@@ -453,7 +453,7 @@ export function getInsightsSummary(program: ShadowWorkProgram): {
   byWeek: Record<WeekNumber, string[]>
   recent: string[]
 } {
-  const byWeek: Record<WeekNumber, string[]> = {} as any
+  const byWeek: Record<WeekNumber, string[]> = {} as Record<WeekNumber, string[]>
 
   program.progress.forEach(wp => {
     const weekInsights = wp.completedExercises
@@ -563,11 +563,11 @@ export function importProgress(json: string): {
     lastActivityDate: data.program.lastActivityDate
       ? new Date(data.program.lastActivityDate)
       : undefined,
-    progress: data.program.progress.map((wp: any) => ({
+    progress: data.program.progress.map((wp: { startDate?: string; completedDate?: string; completedExercises: Array<{ completedAt: string }>; weeklyReflection?: { completedAt: string } }) => ({
       ...wp,
       startDate: wp.startDate ? new Date(wp.startDate) : undefined,
       completedDate: wp.completedDate ? new Date(wp.completedDate) : undefined,
-      completedExercises: wp.completedExercises.map((c: any) => ({
+      completedExercises: wp.completedExercises.map((c: { completedAt: string }) => ({
         ...c,
         completedAt: new Date(c.completedAt)
       })),
@@ -585,11 +585,11 @@ export function importProgress(json: string): {
     programStartDate: data.profile.programStartDate
       ? new Date(data.profile.programStartDate)
       : undefined,
-    breakthroughs: data.profile.breakthroughs.map((b: any) => ({
+    breakthroughs: data.profile.breakthroughs.map((b: { date: string }) => ({
       ...b,
       date: new Date(b.date)
     })),
-    growthAreas: data.profile.growthAreas.map((g: any) => ({
+    growthAreas: data.profile.growthAreas.map((g: { lastUpdated: string }) => ({
       ...g,
       lastUpdated: new Date(g.lastUpdated)
     }))

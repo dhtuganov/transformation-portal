@@ -80,9 +80,9 @@ export function GoalEditor({
 
     setLoading(true);
     try {
-       
+
       const { data, error } = await (supabase
-        .from('development_goals') as any)
+        .from('development_goals') as ReturnType<typeof supabase.from>)
         .update({
           title: title.trim(),
           description: description.trim() || null,
@@ -118,9 +118,9 @@ export function GoalEditor({
 
     setLoading(true);
     try {
-       
-      const { error } = await (supabase
-        .from('development_goals') as any)
+
+      const { error } = await supabase
+        .from('development_goals')
         .delete()
         .eq('id', goal.id);
 
