@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { QuizWithQuestions, calculateMBTIResult, MBTIResult } from '@/types/quiz';
 import { QuizQuestion } from './QuizQuestion';
 import { QuizProgress } from './QuizProgress';
@@ -8,6 +8,16 @@ import { QuizResult } from './QuizResult';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { ChevronLeft, ChevronRight, CheckCircle } from 'lucide-react';
+
+// Fisher-Yates shuffle for stable randomization
+function shuffleArray<T>(array: T[]): T[] {
+  const shuffled = [...array]
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1))
+    ;[shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]
+  }
+  return shuffled
+}
 
 interface QuizProps {
   quiz: QuizWithQuestions;
@@ -21,9 +31,12 @@ export function Quiz({ quiz, onComplete }: QuizProps) {
   const [timeSpent, setTimeSpent] = useState(0);
   const [isComplete, setIsComplete] = useState(false);
 
-  const questions = quiz.shuffle_questions
-    ? [...quiz.questions].sort(() => Math.random() - 0.5)
-    : quiz.questions;
+  // Memoize shuffled questions - shuffle only once on mount, not on every render
+  const questions = useMemo(() => {
+    return quiz.shuffle_questions
+      ? shuffleArray(quiz.questions)
+      : quiz.questions
+  }, [quiz.questions, quiz.shuffle_questions])
 
   const currentQuestion = questions[currentIndex];
   const answeredCount = Object.keys(answers).length;

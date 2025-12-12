@@ -18,7 +18,7 @@ import { CreateGoalDialog } from '@/components/ipr/CreateGoalDialog';
 import { GoalEditor } from '@/components/ipr/GoalEditor';
 import { MilestoneManager } from '@/components/ipr/MilestoneManager';
 import { ExportButton, type ExportFormat } from '@/components/export/ExportButton';
-import { exportIPRToPDF } from '@/lib/export/pdf';
+// PDF export loaded dynamically on click to avoid ~200KB in initial bundle
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -177,6 +177,8 @@ export default function PlanPage({ params }: PlanPageProps) {
     if (!plan) return;
 
     if (format === 'pdf') {
+      // Dynamic import - jspdf + autotable load only on click (~200KB)
+      const { exportIPRToPDF } = await import('@/lib/export/pdf');
       await exportIPRToPDF(plan, goalsWithMilestones, userName);
     }
     // Excel format not implemented for IPR

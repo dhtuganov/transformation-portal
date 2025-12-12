@@ -5,8 +5,8 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { TeamChart } from '@/components/mbti/TeamChart'
 import { TypeBadge } from '@/components/mbti/TypeBadge'
+import { LazyTeamChart } from '@/components/mbti/LazyTeamChart'
 import { TeamExportButton } from '@/components/team/TeamExportButton'
 import type { TeamMemberExportData } from '@/lib/export/excel'
 import {
@@ -24,7 +24,7 @@ import {
 } from 'lucide-react'
 import type { MBTIType } from '@/types/database'
 
-export const dynamic = 'force-dynamic'
+export const revalidate = 0 // force-dynamic equivalent
 
 export const metadata = {
   title: 'Dashboard руководителя | Otrar Transformation Portal',
@@ -95,52 +95,86 @@ export default async function TeamPage() {
     teamMembers = data || []
   }
 
-  // Fetch learning progress
+  // Fetch learning progress, quiz attempts, and development plans in PARALLEL
   const teamIds = teamMembers.map(m => m.id)
-  const { data: progressData } = await supabase
-    .from('learning_progress')
-    .select('user_id, status, progress_percent')
-    .in('user_id', teamIds.length > 0 ? teamIds : ['']) as { data: { user_id: string; status: string; progress_percent: number }[] | null }
+  const safeTeamIds = teamIds.length > 0 ? teamIds : ['']
 
-  // Fetch quiz attempts
-  const { data: quizAttempts } = await supabase
-    .from('quiz_attempts')
-    .select('user_id, status, completed_at')
-    .eq('status', 'completed')
-    .in('user_id', teamIds.length > 0 ? teamIds : ['']) as { data: { user_id: string; status: string }[] | null }
+  const [progressResult, quizResult, plansResult] = await Promise.all([
+    supabase
+      .from('learning_progress')
+      .select('user_id, status, progress_percent')
+      .in('user_id', safeTeamIds),
+    supabase
+      .from('quiz_attempts')
+      .select('user_id, status, completed_at')
+      .eq('status', 'completed')
+      .in('user_id', safeTeamIds),
+    supabase
+      .from('development_plans')
+      .select('user_id, status')
+      .in('user_id', safeTeamIds)
+  ])
 
-  // Fetch development plans
-  const { data: developmentPlans } = await supabase
-    .from('development_plans')
-    .select('user_id, status')
-    .in('user_id', teamIds.length > 0 ? teamIds : ['']) as { data: { user_id: string; status: string }[] | null }
+  const progressData = progressResult.data as { user_id: string; status: string; progress_percent: number }[] | null
+  const quizAttempts = quizResult.data as { user_id: string; status: string }[] | null
+  const developmentPlans = plansResult.data as { user_id: string; status: string }[] | null
 
   // Calculate statistics
   const totalMembers = teamMembers.length
   const membersWithMBTI = teamMembers.filter(m => m.mbti_type).length
   const verifiedMBTI = teamMembers.filter(m => m.mbti_verified).length
 
-  // Learning progress
-  const progressByUser: Record<string, number> = {}
-  teamIds.forEach(id => {
-    const userProgress = progressData?.filter(p => p.user_id === id) || []
-    const completed = userProgress.filter(p => p.status === 'completed').length
-    const total = userProgress.length
-    progressByUser[id] = total > 0 ? Math.round((completed / total) * 100) : 0
+  // Pre-build Maps for O(1) lookups instead of O(N) filter in loops
+  // Progress by user: Map<userId, { completed: number, total: number }>
+  const progressMap = new Map<string, { completed: number; total: number }>()
+  progressData?.forEach(p => {
+    const current = progressMap.get(p.user_id) || { completed: 0, total: 0 }
+    progressMap.set(p.user_id, {
+      completed: current.completed + (p.status === 'completed' ? 1 : 0),
+      total: current.total + 1
+    })
   })
 
-  const usersWithProgress = new Set(progressData?.map(p => p.user_id) || [])
+  // Quiz attempts by user: Map<userId, count>
+  const quizMap = new Map<string, number>()
+  quizAttempts?.forEach(a => {
+    quizMap.set(a.user_id, (quizMap.get(a.user_id) || 0) + 1)
+  })
+
+  // Development plans by user: Map<userId, { count: number, hasActive: boolean }>
+  const plansMap = new Map<string, { count: number; hasActive: boolean }>()
+  let activePlansCount = 0
+  developmentPlans?.forEach(p => {
+    const current = plansMap.get(p.user_id) || { count: 0, hasActive: false }
+    const isActive = p.status === 'active'
+    if (isActive) activePlansCount++
+    plansMap.set(p.user_id, {
+      count: current.count + 1,
+      hasActive: current.hasActive || isActive
+    })
+  })
+
+  // Learning progress calculation using Map (O(N) instead of O(N*M))
+  const progressByUser: Record<string, number> = {}
+  teamIds.forEach(id => {
+    const userProgress = progressMap.get(id)
+    progressByUser[id] = userProgress && userProgress.total > 0
+      ? Math.round((userProgress.completed / userProgress.total) * 100)
+      : 0
+  })
+
+  const usersWithProgress = new Set(progressMap.keys())
   const avgProgress = teamMembers.length > 0
     ? Math.round(Object.values(progressByUser).reduce((a, b) => a + b, 0) / Math.max(teamMembers.length, 1))
     : 0
 
   // Quiz statistics
   const completedQuizzes = quizAttempts?.length || 0
-  const usersWithQuizzes = new Set(quizAttempts?.map(a => a.user_id) || [])
+  const usersWithQuizzes = new Set(quizMap.keys())
 
   // Development plans
-  const activePlans = developmentPlans?.filter(p => p.status === 'active').length || 0
-  const usersWithPlans = new Set(developmentPlans?.map(p => p.user_id) || [])
+  const activePlans = activePlansCount
+  const usersWithPlans = new Set(plansMap.keys())
 
   // Calculate maturity score
   const mbtiCoverage = totalMembers > 0 ? (membersWithMBTI / totalMembers) * 25 : 0
@@ -163,14 +197,13 @@ export default async function TeamPage() {
 
   const mbtiPercent = totalMembers > 0 ? Math.round((membersWithMBTI / totalMembers) * 100) : 0
 
-  // Prepare export data
+  // Prepare export data using pre-built Maps (O(1) lookups)
   const exportData: TeamMemberExportData[] = teamMembers.map(member => {
-    const quizzesCompleted = quizAttempts?.filter(a => a.user_id === member.id).length || 0;
-    const learningProgress = progressByUser[member.id] || 0;
-    const userPlans = developmentPlans?.filter(p => p.user_id === member.id) || [];
-    const iprCount = userPlans.length;
-    const activeIPR = userPlans.find(p => p.status === 'active');
-    const iprStatus = activeIPR ? 'Активный' : iprCount > 0 ? 'Есть планы' : 'Нет ИПР';
+    const quizzesCompleted = quizMap.get(member.id) || 0
+    const learningProgress = progressByUser[member.id] || 0
+    const userPlansInfo = plansMap.get(member.id)
+    const iprCount = userPlansInfo?.count || 0
+    const iprStatus = userPlansInfo?.hasActive ? 'Активный' : iprCount > 0 ? 'Есть планы' : 'Нет ИПР'
 
     return {
       id: member.id,
@@ -185,8 +218,8 @@ export default async function TeamPage() {
       learning_progress: learningProgress,
       ipr_status: iprStatus,
       ipr_count: iprCount,
-    };
-  });
+    }
+  })
 
   return (
     <div className="container mx-auto py-8 px-4 space-y-6">
@@ -414,7 +447,7 @@ export default async function TeamPage() {
 
         <TabsContent value="team" className="space-y-6">
           {/* MBTI Chart */}
-          <TeamChart members={teamMembers.map(m => ({
+          <LazyTeamChart members={teamMembers.map(m => ({
             id: m.id,
             full_name: m.full_name,
             mbti_type: m.mbti_type as MBTIType | null,
